@@ -1,0 +1,20 @@
+# Betriebssystem-Dateien
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor-Dateien
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporäre Dateien
+*.tmp
+*.log
+*.bak
+
+# Abhängigkeiten (falls später welche hinzukommen)
+node_modules/
+package-lock.json
+yarn.lock
