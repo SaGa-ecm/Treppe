@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>Treppenplaner · Breite & Statik · DIN 18065</title>
+    <title>Treppenplaner -Free for all- please Donate if u like this Tool</title>
     <style>
         /* === CSS-Variablen für Light- & Darkmode === */
         :root {
@@ -31,6 +31,7 @@
             --button-bg: #2e241e;
             --button-text: white;
             --transition-speed: 0.2s;
+            --inactive-opacity: 0.6;
         }
 
         [data-theme="dark"] {
@@ -160,6 +161,10 @@
             border: 2px solid var(--stat-bg);
             cursor: grab;
         }
+        input[type=range].inactive-slider {
+            opacity: var(--inactive-opacity);
+            pointer-events: none;
+        }
         select {
             width: 100%;
             padding: 12px 16px;
@@ -276,6 +281,11 @@
             margin-top: 12px;
             transition: background var(--transition-speed) ease, color var(--transition-speed) ease;
         }
+        .reset-btn {
+            background: var(--accent);
+            color: white;
+            margin-top: 8px;
+        }
         .footnote {
             margin-top: 16px;
             font-size: 0.8rem;
@@ -321,8 +331,6 @@
             background: #3a352a;
             color: var(--text-primary);
         }
-
-        /* Header mit Darkmode-Toggle */
         .header-actions {
             display: flex;
             align-items: center;
@@ -346,8 +354,6 @@
             background: var(--accent);
             color: white;
         }
-
-        /* Spendenbutton */
         .donate-section {
             margin-top: 20px;
             text-align: center;
@@ -371,12 +377,18 @@
             color: white;
             transform: scale(1.02);
         }
+        .manual-section {
+            margin: 10px 0 20px;
+            padding: 12px;
+            background: var(--badge-bg);
+            border-radius: 20px;
+        }
     </style>
 </head>
 <body>
 <div class="card">
     <div style="display: flex; align-items: center; margin-bottom: 10px;">
-        <h1 style="margin-bottom: 0;">🪵 Treppenplaner · Breite & Statik</h1>
+        <h1 style="margin-bottom: 0;">🪵 Treppenplaner · Manuelle Stufen</h1>
         <div class="header-actions">
             <button class="theme-toggle" id="themeToggle" title="Darkmode umschalten">
                 <span id="themeIcon">🌙</span>
@@ -385,7 +397,7 @@
         </div>
     </div>
     <div class="subtitle">
-        Schrittmaßregel · Laufbreite · Lastannahmen · 
+        Schrittmaßregel · Laufbreite · Lastannahmen · Manuelle Stufenmaße
         <span class="has-tooltip" style="font-weight:400;">DAU‑Modus 
             <span class="tooltip-text">Selbsterklärend – auch ohne Vorwissen nutzbar.<br>Alle Fachbegriffe werden per Mouseover erklärt.</span>
         </span>
@@ -394,8 +406,7 @@
     <div class="grid-2">
         <!-- LINKE SEITE: Eingaben -->
         <div class="panel">
-            <!-- ... (unveränderte Eingabefelder aus vorheriger Version, werden in Teil 2 wiederholt) ... -->
-                        <div class="slider-group">
+            <div class="slider-group">
                 <label>
                     <span class="has-tooltip">📏 Geschosshöhe 
                         <span class="tooltip-text">Höhe von Oberkante Fertigfußboden (OKFF) unten bis OKFF oben.</span>
@@ -422,7 +433,7 @@
                     <span>500 cm</span>
                 </div>
             </div>
-
+            
             <div style="margin: 10px 0 20px;">
                 <label>
                     <span class="has-tooltip">🧩 Treppenform 
@@ -474,6 +485,58 @@
                     <option value="wohn" selected>Wohngebäude (EFH, bis 2 WE)</option>
                     <option value="public">Öffentliches Gebäude / Mehrfamilienhaus</option>
                 </select>
+            </div>
+
+            <!-- Gewünschte Nutzlast -->
+            <div class="slider-group">
+                <label>
+                    <span class="has-tooltip">⚖️ Gewünschte Nutzlast 
+                        <span class="tooltip-text">Flächenlast in kg/m².<br>Normatives Minimum: 300 kg/m² (Wohnen) / 500 kg/m² (öffentlich).</span>
+                    </span>
+                    <span class="value-badge" id="nutzlastDisplay">300 kg/m²</span>
+                </label>
+                <input type="range" id="nutzlastSlider" min="150" max="1000" value="300" step="10">
+                <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-secondary);">
+                    <span>150 kg/m²</span>
+                    <span>1000 kg/m²</span>
+                </div>
+            </div>
+
+            <!-- NEU: Manuelle Stufenmaße -->
+            <div class="manual-section">
+                <p style="font-weight:600; margin-bottom:12px; color:var(--text-primary);">🔧 Manuelle Stufenmaße (optional)</p>
+                
+                <div class="slider-group">
+                    <label>
+                        <span class="has-tooltip">📏 Auftritt (a)
+                            <span class="tooltip-text">Tiefe der Trittfläche.<br>Norm: 26–32 cm (notwendig), 21–32 cm (nicht notwendig).</span>
+                        </span>
+                        <span class="value-badge" id="auftrittDisplay">29.0 cm</span>
+                    </label>
+                    <input type="range" id="auftrittSlider" min="15" max="37" value="29" step="0.5" class="inactive-slider">
+                </div>
+                
+                <div class="slider-group">
+                    <label>
+                        <span class="has-tooltip">📐 Steigung (s)
+                            <span class="tooltip-text">Höhe einer Stufe.<br>Norm: 14–19 cm.</span>
+                        </span>
+                        <span class="value-badge" id="steigungDisplay">17.0 cm</span>
+                    </label>
+                    <input type="range" id="steigungSlider" min="14" max="19" value="17" step="0.5" class="inactive-slider">
+                </div>
+                
+                <div class="slider-group">
+                    <label>
+                        <span class="has-tooltip">🧱 Stufendicke
+                            <span class="tooltip-text">Materialstärke der Trittstufe.<br>Empfohlen: ≥50 mm für ausreichende Steifigkeit.</span>
+                        </span>
+                        <span class="value-badge" id="dickeDisplay">50 mm</span>
+                    </label>
+                    <input type="range" id="dickeSlider" min="10" max="80" value="50" step="5">
+                </div>
+                
+                <button id="resetAutoBtn" class="reset-btn">↺ Zurück zur automatischen Berechnung</button>
             </div>
 
             <div style="background:var(--badge-bg); border-radius:20px; padding:4px 16px; margin: 20px 0;">
@@ -540,24 +603,24 @@
                     <li style="display:flex; gap:12px;" class="has-tooltip">🔸 <strong>Auftritt (a):</strong> 26–32 cm · ideal 29 cm <span class="tooltip-text">Mindestens 24 cm.</span></li>
                     <li style="display:flex; gap:12px;" class="has-tooltip">📐 <strong>Schrittmaß 2s+a = 59–65 cm</strong> <span class="tooltip-text">Bequem & sicher.</span></li>
                     <li style="display:flex; gap:12px;">🧱 <strong>Wangenholz:</strong> Mindesthöhe 26 cm, Stärke 5 cm</li>
-                    
-                    <!-- Breiten-Status -->
                     <li style="display:flex; gap:12px;" id="breitenStatusLi">
                         <span>📊 <strong>Breiten‑Status:</strong></span>
                         <span id="breitenStatus">konform (≥80 cm)</span>
                     </li>
-                    
-                    <!-- Lastannahmen -->
                     <li style="display:flex; gap:12px;" class="has-tooltip">
-		 <span>⚖️ <strong>Lastannahmen:</strong></span>
-		<span id="lastAngaben">3,0 kN/m² · 2,0 kN <span style="font-weight:400; opacity:0.8;">(≈300 kg/m², 200 kg)</span></span>
-		<span class="tooltip-text">Flächenlast (kN/m²) und Einzellast pro Stufe (kN).<br>Gemäß DIN EN 1991-1-1 (Eurocode 1).<br>1 kN ≈ 100 kg.</span>
-		</li>
+                        <span>⚖️ <strong>Lastannahmen:</strong></span>
+                        <span id="lastAngaben">3,0 kN/m² · 2,0 kN <span style="font-weight:400; opacity:0.8;">(≈300 kg/m², 200 kg)</span></span>
+                        <span class="tooltip-text">Flächenlast (kN/m²) und Einzellast pro Stufe (kN).<br>Gemäß DIN EN 1991-1-1 (Eurocode 1).<br>1 kN ≈ 100 kg.</span>
+                    </li>
+                    <!-- NEU: Status der Stufendicke -->
+                    <li style="display:flex; gap:12px;" id="dickenStatusLi">
+                        <span>📏 <strong>Stufendicke:</strong></span>
+                        <span id="dickenStatus">50 mm (empfohlen)</span>
+                    </li>
                 </ul>
                 
-                <!-- Haftungshinweis -->
                 <div class="info-note" style="margin-top:16px;">
-                    ⚠️ <strong>Planungshilfe</strong> – Die angegebenen Lastwerte ersetzen keinen statischen Nachweis durch einen Fachplaner.
+                    ⚠️ <strong>Planungshilfe</strong> – Die angegebenen Werte ersetzen keinen statischen Nachweis durch einen Fachplaner.
                 </div>
                 
                 <p style="margin-top:18px; border-top:1px dashed var(--border-medium); padding-top:14px; font-size:0.9rem; color:var(--text-secondary);" id="adviceText">
@@ -567,13 +630,13 @@
             
             <!-- Spendenbutton -->
             <div class="donate-section">
-    <a href="https://paypal.me/speeduino" target="_blank" rel="noopener" class="donate-btn" style="padding: 8px 16px;">
-        <img src="https://www.paypalobjects.com/webstatic/de_DE/i/buttons/btn_donate_LG.gif" alt="Spenden mit PayPal" style="height: 40px; border:0;">
-    </a>
-</div>
+                <a href="https://paypal.me/speeduino" target="_blank" rel="noopener" class="donate-btn" style="padding: 8px 16px; background: transparent; border: none;">
+                    <img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" alt="Spenden mit PayPal" style="height: 40px; border:0;">
+                </a>
+            </div>
             
             <div class="footnote">
-                ⚡ Live‑Berechnung · Ampelsystem · Laufbreite & Statik
+                ⚡ Live‑Berechnung · Ampelsystem · Manuelle Stufen
             </div>
         </div>
     </div>
@@ -608,31 +671,44 @@
         const ctx = canvas.getContext('2d');
         const applyBtn = document.getElementById('applyRecommendedBtn');
         
-        // NEUE Elemente
+        // Weitere Elemente
         const breiteSlider = document.getElementById('breiteSlider');
         const gebaeudeSelect = document.getElementById('gebaeudeSelect');
         const breiteDisplay = document.getElementById('breiteDisplay');
         const breitenStatus = document.getElementById('breitenStatus');
         const lastAngaben = document.getElementById('lastAngaben');
+        const nutzlastSlider = document.getElementById('nutzlastSlider');
+        const nutzlastDisplay = document.getElementById('nutzlastDisplay');
+        
+        // NEUE Elemente für manuelle Stufen
+        const auftrittSlider = document.getElementById('auftrittSlider');
+        const steigungSlider = document.getElementById('steigungSlider');
+        const dickeSlider = document.getElementById('dickeSlider');
+        const auftrittDisplay = document.getElementById('auftrittDisplay');
+        const steigungDisplay = document.getElementById('steigungDisplay');
+        const dickeDisplay = document.getElementById('dickeDisplay');
+        const dickenStatus = document.getElementById('dickenStatus');
+        const resetAutoBtn = document.getElementById('resetAutoBtn');
         
         // Darkmode Elemente
         const themeToggle = document.getElementById('themeToggle');
         const themeIcon = document.getElementById('themeIcon');
         const themeText = document.getElementById('themeText');
 
-        // Standard-DIN-Grenzen (für notwendige Treppen)
+        // Modus-Flag
+        let manuellerModus = false;
+
+        // Norm-Grenzen
         const MIN_SCHRITTMASS = 59;
         const MAX_SCHRITTMASS = 65;
         const MAX_RISE = 19.0;
         const MIN_RISE = 14.0;
         const MIN_RUN = 24.0;
-
-        // Gelockerte Grenzen für Dachbodentreppe (Raumspar)
         const ATTIC_MIN_RISE = 18.0;
         const ATTIC_MAX_RISE = 26.0;
         const ATTIC_MIN_RUN = 15.0;
 
-        // === Darkmode Funktionen ===
+        // === Darkmode ===
         function initTheme() {
             const savedTheme = localStorage.getItem('theme');
             const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -640,7 +716,6 @@
             document.documentElement.setAttribute('data-theme', theme);
             updateToggleIcon(theme);
         }
-
         function updateToggleIcon(theme) {
             if (theme === 'dark') {
                 themeIcon.textContent = '☀️';
@@ -650,7 +725,6 @@
                 themeText.textContent = 'Dark';
             }
         }
-
         function toggleTheme() {
             const currentTheme = document.documentElement.getAttribute('data-theme');
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
@@ -659,20 +733,24 @@
             updateToggleIcon(newTheme);
         }
 
-        // Hilfsfunktionen für Breite und Lasten
+        // Hilfsfunktionen
         function getMindestbreite(gebaeudeTyp) {
             return gebaeudeTyp === 'wohn' ? 80 : 100;
         }
-
         function getLasten(gebaeudeTyp) {
-            if (gebaeudeTyp === 'wohn') {
-                return { flaeche: 3.0, einzel: 2.0 };
-            } else {
-                return { flaeche: 5.0, einzel: 2.0 };
-            }
+            return gebaeudeTyp === 'wohn' ? { flaeche: 3.0, einzel: 2.0 } : { flaeche: 5.0, einzel: 2.0 };
+        }
+        function getMindestlast(gebaeudeTyp) {
+            return gebaeudeTyp === 'wohn' ? 300 : 500;
         }
 
-        function calculateStairs(heightCm, availRunCm, type, podestCm) {
+        // Automatische Optimierung (bisherige calculateStairs)
+        function calculateAuto(heightCm, availRunCm, type, podestCm) {
+            // ... identisch zur vorherigen Version (wird in Teil 3 eingefügt)
+                    // === Fortsetzung des JavaScript-Codes ===
+
+        // Automatische Berechnung (bisherige calculateStairs)
+        function calculateAuto(heightCm, availRunCm, type, podestCm) {
             const isAttic = (type === 'dachboden');
             const minRise = isAttic ? ATTIC_MIN_RISE : MIN_RISE;
             const maxRise = isAttic ? ATTIC_MAX_RISE : MAX_RISE;
@@ -723,25 +801,19 @@
                 let nFallback = Math.round(heightCm / 17.0);
                 nFallback = Math.min(22, Math.max(3, nFallback));
                 const sFallback = heightCm / nFallback;
-                let aFallback;
-                if (podestUsed) aFallback = effectiveRun / (nFallback - 1);
-                else aFallback = effectiveRun / (nFallback - 1);
+                let aFallback = podestUsed ? effectiveRun / (nFallback - 1) : effectiveRun / (nFallback - 1);
                 const schrittFallback = 2 * sFallback + aFallback;
                 return {
                     steps: nFallback, rise: sFallback, run: aFallback, schrittmass: schrittFallback,
                     laufLength: availRunCm, angle: Math.atan(sFallback / aFallback) * 180 / Math.PI,
-                    valid: false, comfort: 'außerhalb Norm', podestUsed, wendelAbzug, effectiveRun,
-                    isAttic
+                    valid: false, comfort: 'außerhalb Norm', podestUsed, wendelAbzug, effectiveRun, isAttic
                 };
             }
             
             const angle = Math.atan(bestS / bestA) * 180 / Math.PI;
-            let valid = false;
-            if (isAttic) {
-                valid = (bestS >= ATTIC_MIN_RISE && bestS <= ATTIC_MAX_RISE && bestA >= ATTIC_MIN_RUN);
-            } else {
-                valid = (bestSchritt >= 59 && bestSchritt <= 65 && bestS <= 19.0 && bestA >= 24.0);
-            }
+            let valid = isAttic 
+                ? (bestS >= ATTIC_MIN_RISE && bestS <= ATTIC_MAX_RISE && bestA >= ATTIC_MIN_RUN)
+                : (bestSchritt >= 59 && bestSchritt <= 65 && bestS <= 19.0 && bestA >= 24.0);
             let comfort = valid ? (isAttic ? 'Raumspar' : 'DIN-konform') : 'nicht normgerecht';
             if (!isAttic && bestS < 16 && bestA > 29) comfort = 'sehr bequem';
             else if (!isAttic && bestS > 18.5) comfort = 'steil';
@@ -750,8 +822,29 @@
                      angle, valid, comfort, podestUsed, wendelAbzug, effectiveRun, isAttic };
         }
 
-        // Fortsetzung in Teil 3 ...
-                // === Fortsetzung des JavaScript-Codes ===
+        // Manuelle Berechnung
+        function calculateManual(heightCm, steigungCm, auftrittCm, type, podestCm) {
+            const isAttic = (type === 'dachboden');
+            const steps = Math.round(heightCm / steigungCm);
+            const actualRise = heightCm / steps;
+            const laufLength = (steps - 1) * auftrittCm;
+            const schrittmass = 2 * actualRise + auftrittCm;
+            const angle = Math.atan(actualRise / auftrittCm) * 180 / Math.PI;
+            
+            let podestUsed = false;
+            let wendelAbzug = 0;
+            if (type === 'viertel') wendelAbzug = 30;
+            if (type === 'halb') wendelAbzug = 60;
+            if (type === 'podest' && podestCm >= 80) podestUsed = true;
+            
+            let valid = isAttic
+                ? (actualRise >= ATTIC_MIN_RISE && actualRise <= ATTIC_MAX_RISE && auftrittCm >= ATTIC_MIN_RUN)
+                : (schrittmass >= 59 && schrittmass <= 65 && actualRise <= 19.0 && auftrittCm >= 24.0);
+            let comfort = valid ? (isAttic ? 'Raumspar' : 'DIN-konform') : 'nicht normgerecht';
+            
+            return { steps, rise: actualRise, run: auftrittCm, schrittmass, laufLength, angle, valid, comfort,
+                     podestUsed, wendelAbzug, isAttic };
+        }
 
         function renderAll() {
             const height = parseFloat(heightSlider.value);
@@ -760,36 +853,73 @@
             const podest = parseFloat(podestSlider.value);
             const breite = parseFloat(breiteSlider.value);
             const gebaeude = gebaeudeSelect.value;
+            const nutzlast = parseFloat(nutzlastSlider.value);
+            const dicke = parseFloat(dickeSlider.value);
             
             heightDisplay.textContent = height + ' cm';
             distanceDisplay.textContent = distance + ' cm';
             podestDisplay.textContent = podest + ' cm';
             breiteDisplay.textContent = breite + ' cm';
+            nutzlastDisplay.textContent = nutzlast + ' kg/m²';
+            dickeDisplay.textContent = dicke + ' mm';
             podestGroup.style.display = (type === 'podest') ? 'block' : 'none';
             
-            const p = calculateStairs(height, distance, type, podest);
+            let p;
+            if (manuellerModus) {
+                const manSteigung = parseFloat(steigungSlider.value);
+                const manAuftritt = parseFloat(auftrittSlider.value);
+                steigungDisplay.textContent = manSteigung.toFixed(1) + ' cm';
+                auftrittDisplay.textContent = manAuftritt.toFixed(1) + ' cm';
+                p = calculateManual(height, manSteigung, manAuftritt, type, podest);
+            } else {
+                p = calculateAuto(height, distance, type, podest);
+                // Synchronisiere die manuellen Slider mit den Auto-Werten (optisch)
+                steigungSlider.value = p.rise;
+                auftrittSlider.value = p.run;
+                steigungDisplay.textContent = p.rise.toFixed(1) + ' cm';
+                auftrittDisplay.textContent = p.run.toFixed(1) + ' cm';
+            }
+            
+            // UI-Aktualisierung für Slider-Klassen
+            auftrittSlider.classList.toggle('inactive-slider', !manuellerModus);
+            steigungSlider.classList.toggle('inactive-slider', !manuellerModus);
             
             stepsCount.textContent = p.steps;
             riseValue.textContent = p.rise.toFixed(1);
             runValue.textContent = p.run.toFixed(1);
             angleValue.textContent = p.angle.toFixed(1);
             schrittmassSpan.textContent = p.schrittmass.toFixed(1) + ' cm';
-            laufLengthDisplay.textContent = p.laufLength.toFixed(0) + ' cm';
             
-            // Breiten- und Lastberechnung
+            const berechneteLauflaenge = p.laufLength;
+            laufLengthDisplay.textContent = berechneteLauflaenge.toFixed(0) + ' cm';
+            
+            // Prüfung: passt die berechnete Lauflänge in die verfügbare Entfernung?
+            const passtInPlatz = berechneteLauflaenge <= distance;
+            
+            // Breitenprüfung
             const mindestbreite = getMindestbreite(gebaeude);
-            const lasten = getLasten(gebaeude);
             const breiteOk = breite >= mindestbreite;
-            
             breitenStatus.textContent = breiteOk ? `konform (≥${mindestbreite} cm)` : `zu schmal (<${mindestbreite} cm)`;
             breitenStatus.style.color = breiteOk ? '#2e7d32' : '#b55a2b';
-            const flaecheKg = (lasten.flaeche * 100).toFixed(0);
-const einzelKg = (lasten.einzel * 100).toFixed(0);
-lastAngaben.innerHTML = `${lasten.flaeche.toFixed(1)} kN/m² · ${lasten.einzel.toFixed(1)} kN <span style="font-weight:400; opacity:0.8;">(≈${flaecheKg} kg/m², ${einzelKg} kg)</span>`;
             
-            // Gesamtvalidität (Geometrie + Breite)
+            // Lasten
+            const lasten = getLasten(gebaeude);
+            const flaecheKg = (lasten.flaeche * 100).toFixed(0);
+            const einzelKg = (lasten.einzel * 100).toFixed(0);
+            lastAngaben.innerHTML = `${lasten.flaeche.toFixed(1)} kN/m² · ${lasten.einzel.toFixed(1)} kN <span style="font-weight:400; opacity:0.8;">(≈${flaecheKg} kg/m², ${einzelKg} kg)</span>`;
+            
+            // Nutzlastprüfung
+            const mindestlast = getMindestlast(gebaeude);
+            const lastOk = nutzlast >= mindestlast;
+            
+            // Stufendicke prüfen
+            const dickeOk = dicke >= 50;
+            dickenStatus.textContent = dickeOk ? `${dicke} mm (empfohlen)` : `${dicke} mm (zu dünn, empfohlen ≥50 mm)`;
+            dickenStatus.style.color = dickeOk ? '#2e7d32' : '#b55a2b';
+            
+            // Gesamtvalidität
             const geometrieOk = p.valid;
-            const gesamtValid = geometrieOk && breiteOk;
+            const gesamtValid = geometrieOk && breiteOk && lastOk && dickeOk && passtInPlatz;
             
             normTag.textContent = gesamtValid ? (p.isAttic ? '✅ Raumspar' : '✅ DIN') : '⚠️ außerhalb Norm';
             normTag.style.background = gesamtValid ? '#3c6e4a' : '#b55a2b';
@@ -798,23 +928,32 @@ lastAngaben.innerHTML = `${lasten.flaeche.toFixed(1)} kN/m² · ${lasten.einzel.
             if (p.isAttic) {
                 statusText.textContent = gesamtValid ? 'Raumspartreppe · nur für gelegentliche Nutzung' : 'Raumspartreppe außerhalb empfohlener Grenzen';
             } else {
-                statusText.textContent = gesamtValid ? 'DIN‑konform · bequeme Treppe' : 'Nicht normgerecht · Prüfen Sie Geometrie oder Breite';
+                if (!geometrieOk) statusText.textContent = 'Geometrie nicht normgerecht';
+                else if (!breiteOk) statusText.textContent = 'Laufbreite zu gering';
+                else if (!lastOk) statusText.textContent = 'Nutzlast unterschreitet Mindestwert';
+                else if (!dickeOk) statusText.textContent = 'Stufendicke zu gering';
+                else if (!passtInPlatz) statusText.textContent = 'Treppe zu lang für verfügbaren Platz';
+                else statusText.textContent = 'DIN‑konform · bequeme Treppe';
             }
             
             let advice = '';
             if (!geometrieOk) {
                 if (p.run < (p.isAttic ? ATTIC_MIN_RUN : MIN_RUN)) advice = 'Auftritt zu schmal.';
                 else if (p.rise > (p.isAttic ? ATTIC_MAX_RISE : MAX_RISE)) advice = 'Steigung zu hoch.';
-                else if (!p.isAttic) advice = 'Schrittmaß außerhalb 59–65 cm.';
-                else advice = 'Grenzwerte für Raumspartreppe überschritten.';
+                else if (!p.isAttic && (p.schrittmass < 59 || p.schrittmass > 65)) advice = 'Schrittmaß außerhalb 59–65 cm.';
+                else advice = 'Grenzwerte überschritten.';
             } else if (!breiteOk) {
-                advice = `Laufbreite zu gering (mind. ${mindestbreite} cm für diesen Gebäudetyp).`;
+                advice = `Laufbreite zu gering (mind. ${mindestbreite} cm).`;
+            } else if (!lastOk) {
+                advice = `Nutzlast (${nutzlast} kg/m²) unter Minimum (${mindestlast} kg/m²).`;
+            } else if (!dickeOk) {
+                advice = `Stufendicke (${dicke} mm) unter Empfehlung (50 mm).`;
+            } else if (!passtInPlatz) {
+                advice = `Treppe ist ${(berechneteLauflaenge - distance).toFixed(1)} cm zu lang für den verfügbaren Platz.`;
             } else {
-                advice = p.isAttic ? 'Raumspartreppe – keine notwendige Treppe nach DIN 18065.' : 'Platzbedarf und Breite normgerecht.';
+                advice = p.isAttic ? 'Raumspartreppe – keine notwendige Treppe.' : 'Alle Werte normgerecht.';
             }
-            if (type === 'viertel' || type === 'halb') {
-                advice += ' Wendelung berücksichtigt (Abzug ' + p.wendelAbzug + ' cm).';
-            }
+            if (type === 'viertel' || type === 'halb') advice += ' Wendelung berücksichtigt.';
             if (p.podestUsed) advice += ' Podesttiefe ' + podest + ' cm.';
             adviceText.textContent = '📌 ' + advice;
             
@@ -825,25 +964,19 @@ lastAngaben.innerHTML = `${lasten.flaeche.toFixed(1)} kN/m² · ${lasten.einzel.
             let listHtml = '';
             for (let i=1; i<=n; i++) {
                 const hoehe = (i * rise).toFixed(1);
-                let auftrittInfo = '';
-                if (i < n) {
-                    if (p.podestUsed && i === 1) auftrittInfo = 'Podest ' + podest + ' cm';
-                    else auftrittInfo = 'Auftritt ' + run.toFixed(1) + ' cm';
-                } else {
-                    auftrittInfo = 'Austritt';
-                }
+                let auftrittInfo = (i < n) ? `Auftritt ${run.toFixed(1)} cm` : 'Austritt';
+                if (p.podestUsed && i === 1) auftrittInfo = `Podest ${podest} cm`;
                 listHtml += `<div class="step-row"><span>Stufe ${i}</span><span>${hoehe} cm</span><span style="color:var(--text-secondary);">${auftrittInfo}</span></div>`;
             }
             stepListContainer.innerHTML = listHtml;
             stepDetailHint.textContent = `Auftritt ${run.toFixed(1)} cm`;
             
-            // Visualisierungstitel
             let title = 'Ansicht · ';
             if (type === 'gerade') title += 'gerade Treppe';
             else if (type === 'viertel') title += 'viertelgewendelt (Draufsicht)';
             else if (type === 'halb') title += 'halbgewendelt (Draufsicht)';
             else if (type === 'podest') title += 'Podesttreppe';
-            else if (type === 'dachboden') title += 'Dachbodentreppe (steil)';
+            else title += 'Dachbodentreppe (steil)';
             visuTitle.textContent = title;
             
             drawCanvas(p, type, podest);
@@ -867,12 +1000,7 @@ lastAngaben.innerHTML = `${lasten.flaeche.toFixed(1)} kN/m² · ${lasten.einzel.
                 ctx.lineWidth = 1.5;
                 
                 for (let i=0; i<p.steps; i++) {
-                    let stepW;
-                    if (i === 0 && p.podestUsed) {
-                        stepW = podest * scaleX;
-                    } else {
-                        stepW = p.run * scaleX;
-                    }
+                    let stepW = (i === 0 && p.podestUsed) ? podest * scaleX : p.run * scaleX;
                     const stepH = p.rise * scaleY;
                     ctx.fillRect(x, y - stepH, stepW, stepH);
                     ctx.strokeRect(x, y - stepH, stepW, stepH);
@@ -898,7 +1026,7 @@ lastAngaben.innerHTML = `${lasten.flaeche.toFixed(1)} kN/m² · ${lasten.einzel.
                 ctx.fillStyle = '#3f332a';
                 ctx.font = '11px system-ui';
                 ctx.fillText(`Höhe ${totalRise.toFixed(0)} cm`, margin.left-10, margin.top-5);
-                ctx.fillText(`Lauflänge ${p.laufLength} cm`, margin.left + p.laufLength*scaleX/2-30, h-10);
+                ctx.fillText(`Lauflänge ${p.laufLength.toFixed(0)} cm`, margin.left + p.laufLength*scaleX/2-30, h-10);
             } else {
                 ctx.fillStyle = '#d9c4b0';
                 ctx.fillRect(margin.left, margin.top, plotW, plotH);
@@ -917,7 +1045,7 @@ lastAngaben.innerHTML = `${lasten.flaeche.toFixed(1)} kN/m² · ${lasten.einzel.
                 }
                 ctx.textAlign = 'left';
                 ctx.font = '11px system-ui';
-                ctx.fillText(`Lauflänge ${p.laufLength} cm`, margin.left+10, margin.top+plotH-10);
+                ctx.fillText(`Lauflänge ${p.laufLength.toFixed(0)} cm`, margin.left+10, margin.top+plotH-10);
             }
         }
 
@@ -928,25 +1056,47 @@ lastAngaben.innerHTML = `${lasten.flaeche.toFixed(1)} kN/m² · ${lasten.einzel.
             return (n-1) * idealRun;
         }
 
+        // Manuellen Modus aktivieren
+        function activateManualMode() {
+            manuellerModus = true;
+            renderAll();
+        }
+
+        // Reset zur Automatik
+        function resetToAuto() {
+            manuellerModus = false;
+            renderAll();
+        }
+
         // === Event Listener ===
         heightSlider.addEventListener('input', renderAll);
-        distanceSlider.addEventListener('input', renderAll);
+        distanceSlider.addEventListener('input', function() {
+            if (!manuellerModus) renderAll();
+            else renderAll(); // auch im manuellen Modus neu prüfen
+        });
         typeSelect.addEventListener('change', renderAll);
         podestSlider.addEventListener('input', renderAll);
         breiteSlider.addEventListener('input', renderAll);
         gebaeudeSelect.addEventListener('change', renderAll);
+        nutzlastSlider.addEventListener('input', renderAll);
+        
+        auftrittSlider.addEventListener('input', activateManualMode);
+        steigungSlider.addEventListener('input', activateManualMode);
+        dickeSlider.addEventListener('input', renderAll);
+        
+        resetAutoBtn.addEventListener('click', resetToAuto);
         
         applyBtn.onclick = () => {
             const h = parseFloat(heightSlider.value);
             distanceSlider.value = Math.round(computeIdealLength(h));
+            if (manuellerModus) {
+                manuellerModus = false;
+            }
             renderAll();
         };
         
-        // Darkmode initialisieren und Toggle-Listener
-        initTheme();
         themeToggle.addEventListener('click', toggleTheme);
-        
-        // Initialen Aufruf
+        initTheme();
         renderAll();
     })();
 </script>
