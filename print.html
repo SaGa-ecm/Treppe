@@ -162,15 +162,18 @@
         try {
             const data = JSON.parse(dataStr);
             
-            // Zusammenfassung
+            // Zusammenfassung (Werte mit einer Dezimalstelle formatieren)
+            const heightFormatted = typeof data.height === 'number' ? data.height.toFixed(1) : data.height;
+            const laufLengthFormatted = typeof data.laufLength === 'number' ? data.laufLength.toFixed(1) : data.laufLength;
+            
             const summaryHtml = `
                 <div class="summary-item">
                     <span class="summary-label">Geschosshöhe</span>
-                    <span class="summary-value">${data.height}<span class="summary-unit">cm</span></span>
+                    <span class="summary-value">${heightFormatted}<span class="summary-unit">cm</span></span>
                 </div>
                 <div class="summary-item">
                     <span class="summary-label">Lauflänge</span>
-                    <span class="summary-value">${data.laufLength}<span class="summary-unit">cm</span></span>
+                    <span class="summary-value">${laufLengthFormatted}<span class="summary-unit">cm</span></span>
                 </div>
                 <div class="summary-item">
                     <span class="summary-label">Steigung / Auftritt</span>

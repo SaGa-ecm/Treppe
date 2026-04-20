@@ -101,24 +101,6 @@ function getMinDickeFromMaterial(materialKey) {
     return mat.minDicke;
 }
 
-// === Rendern der Materialliste ===
-function renderMaterialListe(p, type, podest, breite, materialKey, befestigung, dicke) {
-    const liste = generateMaterialListe(p, type, podest, breite, materialKey, befestigung, dicke);
-    let html = `<table class="material-table">
-        <thead><tr><th>Position</th><th>Menge</th><th>Material</th><th>Maße (L×B×D)</th><th>Hinweis</th></tr></thead><tbody>`;
-    liste.forEach(item => {
-        html += `<tr>
-            <td>${item.pos}</td>
-            <td class="amount">${item.menge}</td>
-            <td>${item.material}</td>
-            <td>${item.laenge} × ${item.breite} × ${item.dicke}</td>
-            <td>${item.hinweis}</td>
-        </tr>`;
-    });
-    html += `</tbody></table>`;
-    materialListeContainer.innerHTML = html;
-}
-
 // === Rendern der gesamten UI ===
 function renderAll() {
     const height = parseFloat(heightSlider.value);
@@ -273,12 +255,26 @@ function renderAll() {
     // Canvas zeichnen
     drawCanvas(p, type, podest, ctx, 500, 280);
     
-    // Materialliste rendern
-    renderMaterialListe(p, type, podest, breite, materialKey, befestigung, dicke);
-    
-    // === Daten für Druckansicht speichern ===
+    // === Materialliste generieren (NUR EINMAL) ===
     const material = MATERIAL_DB[materialKey] || MATERIAL_DB.eiche;
     const positionen = generateMaterialListe(p, type, podest, breite, materialKey, befestigung, dicke);
+    
+    // UI: Materialliste rendern
+    let tableHtml = `<table class="material-table">
+        <thead><tr><th>Position</th><th>Menge</th><th>Material</th><th>Maße (L×B×D)</th><th>Hinweis</th></tr></thead><tbody>`;
+    positionen.forEach(item => {
+        tableHtml += `<tr>
+            <td>${item.pos}</td>
+            <td class="amount">${item.menge}</td>
+            <td>${item.material}</td>
+            <td>${item.laenge} × ${item.breite} × ${item.dicke}</td>
+            <td>${item.hinweis}</td>
+        </tr>`;
+    });
+    tableHtml += `</tbody></table>`;
+    materialListeContainer.innerHTML = tableHtml;
+    
+    // === Daten für Druckansicht speichern ===
     const druckDaten = {
         height: height,
         laufLength: berechneteLauflaenge,
