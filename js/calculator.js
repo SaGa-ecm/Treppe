@@ -58,7 +58,6 @@ export function calculateAuto(heightCm, availRunCm, type, podestCm, materialKey)
         }
         
         const angle = Math.atan(s / a) * 180 / Math.PI;
-        // Bestrafung für steile Treppen, gewichtet mit Materialfaktor
         const anglePenalty = angle > 35 ? (angle - 35) * 0.5 * materialFactor : 0;
         const score = Math.abs(schritt - IDEAL_SCHRITTMASS) * 2 
                     + Math.abs(s - IDEAL_RISE) * 1.5 
@@ -99,12 +98,6 @@ export function calculateAuto(heightCm, availRunCm, type, podestCm, materialKey)
 
 /**
  * Manuelle Berechnung mit vorgegebenen Steigung/Auftritt.
- * @param {number} heightCm - Geschosshöhe in cm
- * @param {number} steigungCm - gewünschte Steigung in cm
- * @param {number} auftrittCm - gewünschter Auftritt in cm
- * @param {string} type - Treppentyp
- * @param {number} podestCm - Podesttiefe in cm
- * @returns {object} Berechnungsergebnis
  */
 export function calculateManual(heightCm, steigungCm, auftrittCm, type, podestCm) {
     const isAttic = (type === 'dachboden');
@@ -134,8 +127,6 @@ export function calculateManual(heightCm, steigungCm, auftrittCm, type, podestCm
 
 /**
  * Berechnet die empfohlene Lauflänge für eine gegebene Höhe (Idealfall).
- * @param {number} h - Geschosshöhe in cm
- * @returns {number} empfohlene Lauflänge in cm
  */
 export function computeIdealLength(h) {
     const idealRise = IDEAL_RISE;
@@ -147,12 +138,6 @@ export function computeIdealLength(h) {
 
 /**
  * Prüft die geometrischen Randbedingungen der gewählten Befestigungsart.
- * Gibt ein Objekt mit Status und Meldung zurück (Warnung, kein harter Fehler).
- * @param {string} befestigung - 'wange', 'bolzen', 'kragarm'
- * @param {number} breite - Laufbreite in cm
- * @param {boolean} podestUsed - ob ein Podest verwendet wird
- * @param {number} laufLength - gesamte Lauflänge in cm
- * @returns {{ok: boolean, message: string}}
  */
 export function validateBefestigung(befestigung, breite, podestUsed, laufLength) {
     let ok = true;
@@ -186,10 +171,130 @@ export function validateBefestigung(befestigung, breite, podestUsed, laufLength)
 
 /**
  * Berechnet die ungefähre Wangenlänge (Schräge) der Treppe.
- * @param {number} heightCm - Geschosshöhe in cm
- * @param {number} laufLength - horizontale Lauflänge in cm
- * @returns {number} Wangenlänge in cm
  */
 export function computeWangenLaenge(heightCm, laufLength) {
     return Math.sqrt(heightCm * heightCm + laufLength * laufLength);
 }
+
+// === NEU: Materialliste generieren ===
+
+/**
+ * Erzeugt eine detaillierte Materialliste mit Zuschnittmaßen und Winkeln.
+ * @param {object} p - Berechnungsergebnis (von calculateAuto/Manual)
+ * @param {string} type - Treppentyp
+ * @param {number} podestCm - Podesttiefe
+ * @param {number} breiteCm - Laufbreite
+ * @param {string} materialKey - Materialschlüssel
+ * @param {string} befestigung - Befestigungsart
+ * @param {number} stufenDickeMm - Stufendicke in mm
+ * @returns {Array} Liste von Materialpositionen
+ */
+export function generateMaterialListe(p, type, podestCm, breiteCm, materialKey, befestigung, stufenDickeMm) {
+    const material = MATERIAL_DB[materialKey] || MATERIAL_DB.eiche;
+    const stufenDickeCm = stufenDickeMm / 10;
+    const wangenLaenge = computeWangenLaenge(p.rise * p.steps, p.laufLength);
+    const wangenHoehe = 26; // cm (Mindesthöhe nach Norm)
+    const wangenStaerke = 5; // cm
+    
+    const liste = [];
+    
+    // 1. Wangen (2 Stück)
+    liste.push({
+        pos: 'Wangen',
+        menge: 2,
+        material: material.name,
+        laenge: wangenLaenge.toFixed(1) + ' cm',
+        breite: wangenHoehe + ' cm',
+        dicke: wangenStaerke + ' cm',
+        hinweis: `Winkel oben/unten: ${p.angle.toFixed(1)}°`
+    });
+    
+    // 2. Trittstufen
+    const stufenAnzahl = p.steps;
+    const auftrittCm = p.run;
+    const stufenBreite = breiteCm;
+    const stufenDickeAnzeige = stufenDickeMm + ' mm';
+    
+    liste.push({
+        pos: 'Trittstufen',
+        menge: stufenAnzahl,
+        material: material.name,
+        laenge: stufenBreite + ' cm',
+        breite: auftrittCm.toFixed(1) + ' cm',
+        dicke: stufenDickeAnzeige,
+        hinweis: p.podestUsed && stufenAnzahl > 0 ? 'Erste Stufe evtl. Podest' : ''
+    });
+    
+    // 3. Setzstufen (optional, falls gewünscht; wir bieten sie an)
+    if (!p.isAttic) {
+        liste.push({
+            pos: 'Setzstufen (optional)',
+            menge: stufenAnzahl - 1,
+            material: material.name,
+            laenge: stufenBreite + ' cm',
+            breite: (p.rise - stufenDickeCm).toFixed(1) + ' cm',
+            dicke: '2 cm (empfohlen)',
+            hinweis: 'Höhe = Steigung minus Trittstufendicke'
+        });
+    }
+    
+    // 4. Podest (falls verwendet)
+    if (p.podestUsed) {
+        liste.push({
+            pos: 'Podestplatte',
+            menge: 1,
+            material: material.name,
+            laenge: breiteCm + ' cm',
+            breite: podestCm + ' cm',
+            dicke: stufenDickeAnzeige,
+            hinweis: 'Tiefe = Podesttiefe'
+        });
+    }
+    
+    // 5. Befestigungsmaterial je nach Art
+    if (befestigung === 'bolzen') {
+        liste.push({
+            pos: 'Wandbefestigung',
+            menge: stufenAnzahl,
+            material: 'Stahl',
+            laenge: '—',
+            breite: '—',
+            dicke: '—',
+            hinweis: 'Bolzenanker + Distanzhülsen pro Stufe'
+        });
+    } else if (befestigung === 'kragarm') {
+        liste.push({
+            pos: 'Kragarmträger',
+            menge: 2,
+            material: 'Stahl',
+            laenge: (breiteCm - 10) + ' cm',
+            breite: '10 cm',
+            dicke: '1 cm',
+            hinweis: 'Seitliche Konsolen, statisch bemessen'
+        });
+    } else {
+        liste.push({
+            pos: 'Wangenbefestigung',
+            menge: 1,
+            material: 'Stahl / Holz',
+            laenge: '—',
+            breite: '—',
+            dicke: '—',
+            hinweis: 'Schrauben, Dübel, Winkelverbinder'
+        });
+    }
+    
+    // 6. Handlauf (optionaler Hinweis)
+    liste.push({
+        pos: 'Handlauf (empfohlen)',
+        menge: 1,
+        material: 'Holz / Edelstahl',
+        laenge: wangenLaenge.toFixed(1) + ' cm',
+        breite: '—',
+        dicke: '—',
+        hinweis: 'Beidseitig bei öffentl. Gebäuden'
+    });
+    
+    return liste;
+}
+

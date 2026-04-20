@@ -4,7 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>Treppenplaner · kostenlos - spendenbasiert</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <!-- Cache-Control: Browser soll stets aktuelle Version laden -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <!-- Stylesheet mit Versionsparameter -->
+    <link rel="stylesheet" href="css/styles.css?v=20260420">
 </head>
 <body>
 <div class="card">
@@ -119,7 +124,7 @@
                 </select>
             </div>
 
-            <!-- NEU: Materialauswahl -->
+            <!-- Materialauswahl -->
             <div style="margin: 10px 0 20px;">
                 <label>
                     <span class="has-tooltip">🪵 Material 
@@ -135,7 +140,7 @@
                 </select>
             </div>
 
-            <!-- NEU: Befestigungsart -->
+            <!-- Befestigungsart -->
             <div style="margin: 10px 0 20px;">
                 <label>
                     <span class="has-tooltip">🔩 Befestigung 
@@ -301,6 +306,20 @@
                 </p>
             </div>
             
+            <!-- NEU: Ausklappbare Materialliste -->
+            <details style="margin-top: 20px; background: var(--info-bg); border-radius: 20px; padding: 16px; border: 1px solid var(--border-medium);">
+                <summary style="font-weight: 600; cursor: pointer; color: var(--text-primary); user-select: none;">
+                    📋 Materialliste & Zuschnittmaße (ausklappen)
+                </summary>
+                <div id="materialListeContainer" style="margin-top: 16px; overflow-x: auto;">
+                    <!-- Wird dynamisch durch JavaScript gefüllt -->
+                    <p style="color: var(--text-secondary);">Berechnung läuft…</p>
+                </div>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 12px; border-top: 1px dashed var(--border-medium); padding-top: 10px;">
+                    ⚙️ Alle Maße in cm (L × B × D). Verschnitt und Toleranzen sind eigenverantwortlich zu berücksichtigen.
+                </p>
+            </details>
+            
             <!-- Spendenformular -->
             <div class="donate-section">
                 <form action="https://www.paypal.com/donate" method="post" target="_blank">
@@ -325,6 +344,7 @@
         </div>
     </div>
 </div>
-<script type="module" src="js/main.js" defer></script>
+<!-- JavaScript mit Versionsparameter -->
+<script type="module" src="js/main.js?v=20260420" defer></script>
 </body>
 </html>

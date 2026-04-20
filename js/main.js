@@ -2,7 +2,7 @@
 import { syncSliderInput, initTheme, updateToggleIcon, getMindestbreite, getLasten, getMindestlast } from './ui.js';
 import { 
     calculateAuto, calculateManual, computeIdealLength, 
-    validateBefestigung, computeWangenLaenge 
+    validateBefestigung, computeWangenLaenge, generateMaterialListe 
 } from './calculator.js';
 import { drawCanvas } from './drawing.js';
 import { 
@@ -62,11 +62,12 @@ const dickeDisplay = document.getElementById('dickeDisplay');
 const dickenStatus = document.getElementById('dickenStatus');
 const resetAutoBtn = document.getElementById('resetAutoBtn');
 
-// Neue UI-Elemente für Material, Befestigung, Wangenlänge
+// Neue UI-Elemente für Material, Befestigung, Wangenlänge, Materialliste
 const materialSelect = document.getElementById('materialSelect');
 const befestigungSelect = document.getElementById('befestigungSelect');
 const wangenLaengeSpan = document.getElementById('wangenLaenge');
 const befestigungStatus = document.getElementById('befestigungStatus');
+const materialListeContainer = document.getElementById('materialListeContainer');
 
 const themeToggle = document.getElementById('themeToggle');
 const themeIcon = document.getElementById('themeIcon');
@@ -97,6 +98,24 @@ themeToggle.addEventListener('click', () => {
 function getMinDickeFromMaterial(materialKey) {
     const mat = MATERIAL_DB[materialKey] || MATERIAL_DB.eiche;
     return mat.minDicke;
+}
+
+// === Rendern der Materialliste ===
+function renderMaterialListe(p, type, podest, breite, materialKey, befestigung, dicke) {
+    const liste = generateMaterialListe(p, type, podest, breite, materialKey, befestigung, dicke);
+    let html = `<table class="material-table">
+        <thead><tr><th>Position</th><th>Menge</th><th>Material</th><th>Maße (L×B×D)</th><th>Hinweis</th></tr></thead><tbody>`;
+    liste.forEach(item => {
+        html += `<tr>
+            <td>${item.pos}</td>
+            <td class="amount">${item.menge}</td>
+            <td>${item.material}</td>
+            <td>${item.laenge} × ${item.breite} × ${item.dicke}</td>
+            <td>${item.hinweis}</td>
+        </tr>`;
+    });
+    html += `</tbody></table>`;
+    materialListeContainer.innerHTML = html;
 }
 
 // === Rendern der gesamten UI ===
@@ -252,8 +271,10 @@ function renderAll() {
     
     // Canvas zeichnen
     drawCanvas(p, type, podest, ctx, 500, 280);
+    
+    // Materialliste rendern
+    renderMaterialListe(p, type, podest, breite, materialKey, befestigung, dicke);
 }
-
 // === Manuelle Modus-Steuerung ===
 function activateManualMode() {
     manuellerModus = true;

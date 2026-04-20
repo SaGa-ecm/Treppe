@@ -387,3 +387,34 @@ input[type=number] {
     font-size: 0.9rem;
     margin-top: 6px;
 }
+
+/* === Materialliste Tabelle === */
+.material-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+}
+.material-table th {
+    text-align: left;
+    padding: 8px 4px;
+    border-bottom: 2px solid var(--border-medium);
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+.material-table td {
+    padding: 6px 4px;
+    border-bottom: 1px solid var(--step-border);
+}
+.material-table tr:last-child td {
+    border-bottom: none;
+}
+.material-table .amount {
+    text-align: right;
+    font-weight: 600;
+}
+.material-hint {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 8px;
+}
