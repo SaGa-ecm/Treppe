@@ -1,10 +1,17 @@
 // === Hauptanwendung – Einstiegspunkt ===
-import { syncSliderInput, initTheme, toggleTheme, getMindestbreite, getLasten, getMindestlast } from './ui.js';
-import { calculateAuto, calculateManual, computeIdealLength } from './calculator.js';
+import { syncSliderInput, initTheme, updateToggleIcon, getMindestbreite, getLasten, getMindestlast } from './ui.js';
+import { 
+    calculateAuto, calculateManual, computeIdealLength, 
+    validateBefestigung, computeWangenLaenge 
+} from './calculator.js';
 import { drawCanvas } from './drawing.js';
-import { EMPFOHLENE_DICKE } from './constants.js';
+import { 
+    EMPFOHLENE_DICKE, MATERIAL_DB,
+    MIN_SCHRITTMASS, MAX_SCHRITTMASS, MAX_RISE, MIN_RUN,
+    ATTIC_MIN_RUN, ATTIC_MAX_RISE
+} from './constants.js';
 
-// DOM-Elemente (einmalig abrufen)
+// === DOM-Elemente (einmalig abrufen) ===
 const heightSlider = document.getElementById('heightSlider');
 const heightInput = document.getElementById('heightInput');
 const distanceSlider = document.getElementById('distanceSlider');
@@ -55,23 +62,27 @@ const dickeDisplay = document.getElementById('dickeDisplay');
 const dickenStatus = document.getElementById('dickenStatus');
 const resetAutoBtn = document.getElementById('resetAutoBtn');
 
+// Neue UI-Elemente für Material, Befestigung, Wangenlänge
+const materialSelect = document.getElementById('materialSelect');
+const befestigungSelect = document.getElementById('befestigungSelect');
+const wangenLaengeSpan = document.getElementById('wangenLaenge');
+const befestigungStatus = document.getElementById('befestigungStatus');
+
 const themeToggle = document.getElementById('themeToggle');
 const themeIcon = document.getElementById('themeIcon');
 const themeText = document.getElementById('themeText');
 
-// State
+// === State ===
 let manuellerModus = false;
 
-// Darkmode initialisieren
+// === Darkmode initialisieren ===
 const currentTheme = initTheme();
 const updateThemeUI = () => {
-    if (document.documentElement.getAttribute('data-theme') === 'dark') {
-        themeIcon.textContent = '☀️';
-        themeText.textContent = 'Hell';
-    } else {
-        themeIcon.textContent = '🌙';
-        themeText.textContent = 'Dunkel';
-    }
+    updateToggleIcon(
+        document.documentElement.getAttribute('data-theme') || 'light',
+        themeIcon,
+        themeText
+    );
 };
 updateThemeUI();
 
@@ -81,6 +92,12 @@ themeToggle.addEventListener('click', () => {
     localStorage.setItem('theme', newTheme);
     updateThemeUI();
 });
+
+// === Hilfsfunktion: Material-spezifische Mindestdicke ===
+function getMinDickeFromMaterial(materialKey) {
+    const mat = MATERIAL_DB[materialKey] || MATERIAL_DB.eiche;
+    return mat.minDicke;
+}
 
 // === Rendern der gesamten UI ===
 function renderAll() {
@@ -92,7 +109,10 @@ function renderAll() {
     const gebaeude = gebaeudeSelect.value;
     const nutzlast = parseFloat(nutzlastSlider.value);
     const dicke = parseFloat(dickeSlider.value);
+    const materialKey = materialSelect.value;
+    const befestigung = befestigungSelect.value;
     
+    // Basis-Displays aktualisieren
     heightDisplay.textContent = height + ' cm';
     distanceDisplay.textContent = distance + ' cm';
     podestDisplay.textContent = podest + ' cm';
@@ -101,6 +121,7 @@ function renderAll() {
     dickeDisplay.textContent = dicke + ' mm';
     podestGroup.style.display = (type === 'podest') ? 'block' : 'none';
     
+    // === Berechnung (Auto / Manuell) ===
     let p;
     if (manuellerModus) {
         const manSteigung = parseFloat(steigungSlider.value);
@@ -109,7 +130,7 @@ function renderAll() {
         auftrittDisplay.textContent = manAuftritt.toFixed(1) + ' cm';
         p = calculateManual(height, manSteigung, manAuftritt, type, podest);
     } else {
-        p = calculateAuto(height, distance, type, podest);
+        p = calculateAuto(height, distance, type, podest, materialKey);
         steigungSlider.value = p.rise;
         steigungInput.value = p.rise;
         auftrittSlider.value = p.run;
@@ -118,11 +139,13 @@ function renderAll() {
         auftrittDisplay.textContent = p.run.toFixed(1) + ' cm';
     }
     
+    // Manuelle Slider aktiv/inaktiv schalten
     auftrittSlider.classList.toggle('inactive-slider', !manuellerModus);
     auftrittInput.classList.toggle('inactive-slider', !manuellerModus);
     steigungSlider.classList.toggle('inactive-slider', !manuellerModus);
     steigungInput.classList.toggle('inactive-slider', !manuellerModus);
     
+    // === Statistiken füllen ===
     stepsCount.textContent = p.steps;
     riseValue.textContent = p.rise.toFixed(1);
     runValue.textContent = p.run.toFixed(1);
@@ -131,9 +154,13 @@ function renderAll() {
     
     const berechneteLauflaenge = p.laufLength;
     laufLengthDisplay.textContent = berechneteLauflaenge.toFixed(0) + ' cm';
-    
     const passtInPlatz = berechneteLauflaenge <= distance;
     
+    // === Wangenlänge berechnen ===
+    const wangenLaenge = computeWangenLaenge(height, berechneteLauflaenge);
+    wangenLaengeSpan.textContent = `${wangenLaenge.toFixed(0)} cm (≈ ${(wangenLaenge/100).toFixed(2)} m)`;
+    
+    // === Prüfungen ===
     const mindestbreite = getMindestbreite(gebaeude);
     const breiteOk = breite >= mindestbreite;
     breitenStatus.textContent = breiteOk ? `konform (≥${mindestbreite} cm)` : `zu schmal (<${mindestbreite} cm)`;
@@ -147,17 +174,25 @@ function renderAll() {
     const mindestlast = getMindestlast(gebaeude);
     const lastOk = nutzlast >= mindestlast;
     
-    const dickeOk = dicke >= EMPFOHLENE_DICKE;
-    dickenStatus.textContent = dickeOk ? `${dicke} mm (empfohlen)` : `${dicke} mm (zu dünn, empfohlen ≥${EMPFOHLENE_DICKE} mm)`;
+    const minDickeMaterial = getMinDickeFromMaterial(materialKey);
+    const dickeOk = dicke >= minDickeMaterial;
+    dickenStatus.textContent = dickeOk ? `${dicke} mm (≥${minDickeMaterial} mm für ${MATERIAL_DB[materialKey].name})` : `${dicke} mm (zu dünn, empfohlen ≥${minDickeMaterial} mm)`;
     dickenStatus.style.color = dickeOk ? '#2e7d32' : '#b55a2b';
     
+    // Befestigungsprüfung
+    const befValid = validateBefestigung(befestigung, breite, p.podestUsed, berechneteLauflaenge);
+    befestigungStatus.textContent = befValid.message;
+    befestigungStatus.style.color = befValid.ok ? '#2e7d32' : '#b55a2b';
+    
     const geometrieOk = p.valid;
+    // Gesamtvalidität: Geometrie + Breite + Last + Dicke + Platz (Befestigung ist nur Warnung)
     const gesamtValid = geometrieOk && breiteOk && lastOk && dickeOk && passtInPlatz;
     
     normTag.textContent = gesamtValid ? (p.isAttic ? '✅ Raumspar' : '✅ DIN') : '⚠️ außerhalb Norm';
     normTag.style.background = gesamtValid ? '#3c6e4a' : '#b55a2b';
     statusMessageDiv.className = gesamtValid ? 'norm-status' : 'norm-status warning-box';
     
+    // Status-Text
     if (p.isAttic) {
         statusText.textContent = gesamtValid ? 'Raumspartreppe · nur für gelegentliche Nutzung' : 'Raumspartreppe außerhalb empfohlener Grenzen';
     } else {
@@ -169,6 +204,7 @@ function renderAll() {
         else statusText.textContent = 'DIN‑konform · bequeme Treppe';
     }
     
+    // Hinweistext
     let advice = '';
     if (!geometrieOk) {
         if (p.run < (p.isAttic ? ATTIC_MIN_RUN : MIN_RUN)) advice = 'Auftritt zu schmal.';
@@ -180,7 +216,7 @@ function renderAll() {
     } else if (!lastOk) {
         advice = `Nutzlast (${nutzlast} kg/m²) unter Minimum (${mindestlast} kg/m²).`;
     } else if (!dickeOk) {
-        advice = `Stufendicke (${dicke} mm) unter Empfehlung (${EMPFOHLENE_DICKE} mm).`;
+        advice = `Stufendicke (${dicke} mm) unter Empfehlung (${minDickeMaterial} mm für ${MATERIAL_DB[materialKey].name}).`;
     } else if (!passtInPlatz) {
         advice = `Treppe ist ${(berechneteLauflaenge - distance).toFixed(1)} cm zu lang.`;
     } else {
@@ -188,9 +224,10 @@ function renderAll() {
     }
     if (type === 'viertel' || type === 'halb') advice += ' Wendelung berücksichtigt.';
     if (p.podestUsed) advice += ' Podesttiefe ' + podest + ' cm.';
+    if (!befValid.ok) advice += ' ⚠️ ' + befValid.message;
     adviceText.textContent = '📌 ' + advice;
     
-    // Stufendetails
+    // Stufendetails-Liste
     const n = p.steps;
     const rise = p.rise;
     const run = p.run;
@@ -204,6 +241,7 @@ function renderAll() {
     stepListContainer.innerHTML = listHtml;
     stepDetailHint.textContent = `Auftritt ${run.toFixed(1)} cm`;
     
+    // Titel für Visualisierung
     let title = 'Ansicht · ';
     if (type === 'gerade') title += 'gerade Treppe';
     else if (type === 'viertel') title += 'viertelgewendelt (Draufsicht)';
@@ -212,6 +250,7 @@ function renderAll() {
     else title += 'Dachbodentreppe (steil)';
     visuTitle.textContent = title;
     
+    // Canvas zeichnen
     drawCanvas(p, type, podest, ctx, 500, 280);
 }
 
@@ -242,9 +281,11 @@ syncSliderInput(steigungSlider, steigungInput, steigungDisplay, 'cm', () => {
 });
 syncSliderInput(dickeSlider, dickeInput, dickeDisplay, 'mm', renderAll);
 
-// === Event Listener ===
+// === Event Listener für Dropdowns und Buttons ===
 typeSelect.addEventListener('change', renderAll);
 gebaeudeSelect.addEventListener('change', renderAll);
+materialSelect.addEventListener('change', renderAll);
+befestigungSelect.addEventListener('change', renderAll);
 resetAutoBtn.addEventListener('click', resetToAuto);
 
 applyBtn.onclick = () => {

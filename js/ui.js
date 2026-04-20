@@ -1,6 +1,8 @@
 // === UI-Hilfsfunktionen ===
 // Synchronisation Slider <-> Number Input, Darkmode, Hilfsfunktionen
 
+import { MINDESTBREITE_WOHN, MINDESTBREITE_PUBLIC, LASTEN, MINDESTLAST_WOHN, MINDESTLAST_PUBLIC } from './constants.js';
+
 /**
  * Synchronisiert einen Slider mit einem Number-Input und aktualisiert ein Display.
  * @param {HTMLInputElement} slider - Range-Slider
@@ -56,12 +58,6 @@ export function toggleTheme(iconEl, textEl) {
 }
 
 // === Norm-Hilfsfunktionen ===
-export function getMindestbreite(gebaeudeTyp) {
-    return gebaeudeTyp === 'wohn' ? MINDESTBREITE_WOHN : MINDESTBREITE_PUBLIC;
-}
-// Fortsetzung von ui.js – Import der Konstanten
-import { MINDESTBREITE_WOHN, MINDESTBREITE_PUBLIC, LASTEN, MINDESTLAST_WOHN, MINDESTLAST_PUBLIC } from './constants.js';
-
 export function getMindestbreite(gebaeudeTyp) {
     return gebaeudeTyp === 'wohn' ? MINDESTBREITE_WOHN : MINDESTBREITE_PUBLIC;
 }

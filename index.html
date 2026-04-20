@@ -24,6 +24,13 @@
         </span>
     </div>
     
+    <!-- Kurze Einführung für bessere Verständlichkeit -->
+    <div style="background: var(--badge-bg); border-radius: 16px; padding: 12px 16px; margin-bottom: 20px; color: var(--text-primary);">
+        <strong>📘 So funktioniert's:</strong> Geben Sie Geschosshöhe und verfügbaren Platz ein. 
+        Das Tool findet automatisch eine normgerechte Treppe. Über die <span class="has-tooltip" style="border-bottom: 1px dashed;">Tooltips <span class="tooltip-text">Fahren Sie mit der Maus über unterstrichene Begriffe oder Symbole, um Erklärungen zu erhalten.</span></span> 
+        erhalten Sie zu jedem Fachbegriff eine kurze Erläuterung.
+    </div>
+
     <div class="grid-2">
         <!-- LINKE SEITE: Eingaben -->
         <div class="panel">
@@ -112,6 +119,36 @@
                 </select>
             </div>
 
+            <!-- NEU: Materialauswahl -->
+            <div style="margin: 10px 0 20px;">
+                <label>
+                    <span class="has-tooltip">🪵 Material 
+                        <span class="tooltip-text">Holzart oder Baustoff. Beeinflusst Eigengewicht und die automatische Optimierung (schweres Material → flachere Treppe).</span>
+                    </span>
+                </label>
+                <select id="materialSelect">
+                    <option value="eiche" selected>Eiche / Buche (ρ ≈ 700 kg/m³)</option>
+                    <option value="fichte">Fichte / Kiefer (ρ ≈ 500 kg/m³)</option>
+                    <option value="leimholz">Leimholz (ρ ≈ 600 kg/m³)</option>
+                    <option value="stahl">Stahl (ρ ≈ 7850 kg/m³)</option>
+                    <option value="beton">Stahlbeton (ρ ≈ 2500 kg/m³)</option>
+                </select>
+            </div>
+
+            <!-- NEU: Befestigungsart -->
+            <div style="margin: 10px 0 20px;">
+                <label>
+                    <span class="has-tooltip">🔩 Befestigung 
+                        <span class="tooltip-text">Konstruktive Ausbildung:<br>Wangen-, Bolzen- oder Kragarmtreppe.<br>Wangen: universell. Bolzen: benötigt tragfähige Wand.<br>Kragarm: freitragend, massiver Untergrund erforderlich.</span>
+                    </span>
+                </label>
+                <select id="befestigungSelect">
+                    <option value="wange" selected>Wangen (seitlich oder mittig)</option>
+                    <option value="bolzen">Bolzen (wandseitig)</option>
+                    <option value="kragarm">Kragarm (freitragend)</option>
+                </select>
+            </div>
+
             <!-- Gewünschte Nutzlast -->
             <div class="slider-group">
                 <label>
@@ -157,7 +194,7 @@
                 <div class="slider-group">
                     <label>
                         <span class="has-tooltip">🧱 Stufendicke
-                            <span class="tooltip-text">Materialstärke der Trittstufe.<br>Empfohlen: ≥50 mm.</span>
+                            <span class="tooltip-text">Materialstärke der Trittstufe.<br>Empfohlen: ≥50 mm (Holz) / ≥80 mm (Beton).</span>
                         </span>
                         <span class="value-badge" id="dickeDisplay">50 mm</span>
                     </label>
@@ -231,6 +268,10 @@
                     <li style="display:flex; gap:12px;" class="has-tooltip">🔹 <strong>Steigung (s):</strong> 14–19 cm · ideal 17 cm <span class="tooltip-text">Maximal 19 cm zulässig.</span></li>
                     <li style="display:flex; gap:12px;" class="has-tooltip">🔸 <strong>Auftritt (a):</strong> 26–32 cm · ideal 29 cm <span class="tooltip-text">Mindestens 24 cm.</span></li>
                     <li style="display:flex; gap:12px;" class="has-tooltip">📐 <strong>Schrittmaß 2s+a = 59–65 cm</strong> <span class="tooltip-text">Bequem & sicher.</span></li>
+                    <li style="display:flex; gap:12px;" id="wangenLaengeLi">
+                        <span>📏 <strong>Wangenlänge (ca.):</strong></span>
+                        <span id="wangenLaenge">—</span>
+                    </li>
                     <li style="display:flex; gap:12px;">🧱 <strong>Wangenholz:</strong> Mindesthöhe 26 cm, Stärke 5 cm</li>
                     <li style="display:flex; gap:12px;" id="breitenStatusLi">
                         <span>📊 <strong>Breiten‑Status:</strong></span>
@@ -244,6 +285,10 @@
                     <li style="display:flex; gap:12px;" id="dickenStatusLi">
                         <span>📏 <strong>Stufendicke:</strong></span>
                         <span id="dickenStatus">50 mm (empfohlen)</span>
+                    </li>
+                    <li style="display:flex; gap:12px;" id="befestigungStatusLi">
+                        <span>🔩 <strong>Befestigungs‑Status:</strong></span>
+                        <span id="befestigungStatus">konform (Wangenkonstruktion)</span>
                     </li>
                 </ul>
                 
@@ -266,7 +311,7 @@
                         <input type="number" name="amount" min="1" step="0.01" placeholder="Betrag (EUR)" style="padding:8px; border-radius:20px; border:1px solid var(--border-medium); width:100%; background:var(--stat-bg); color:var(--text-primary);">
                     </div>
                     <div style="margin-bottom:8px;">
-                        <input type="text" name="item_name" placeholder="Verwendungszweck (optional)" style="padding:8px; border-radius:20px; border:1px solid var(--border-medium); width:100%; background:var(--stat-bg); color:var(--text-primary);">
+                        <input type="text" name="item_name" value="TreppenTool-Spende" placeholder="Verwendungszweck (optional)" style="padding:8px; border-radius:20px; border:1px solid var(--border-medium); width:100%; background:var(--stat-bg); color:var(--text-primary);">
                     </div>
                     <button type="submit" style="background:var(--accent); color:white; border:none; border-radius:60px; padding:12px; font-weight:600; width:100%; cursor:pointer;">
                         💰 Jetzt spenden via PayPal

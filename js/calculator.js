@@ -2,7 +2,8 @@
 import {
     MIN_SCHRITTMASS, MAX_SCHRITTMASS, IDEAL_SCHRITTMASS,
     MAX_RISE, MIN_RISE, IDEAL_RISE, MIN_RUN, IDEAL_RUN,
-    ATTIC_MIN_RISE, ATTIC_MAX_RISE, ATTIC_MIN_RUN
+    ATTIC_MIN_RISE, ATTIC_MAX_RISE, ATTIC_MIN_RUN,
+    MATERIAL_DB, BEFESTIGUNG_TYPEN
 } from './constants.js';
 
 /**
@@ -11,9 +12,10 @@ import {
  * @param {number} availRunCm - verfügbare horizontale Entfernung in cm
  * @param {string} type - Treppentyp (gerade, viertel, halb, podest, dachboden)
  * @param {number} podestCm - Podesttiefe in cm (nur bei podest)
+ * @param {string} materialKey - Schlüssel für MATERIAL_DB
  * @returns {object} Berechnungsergebnis (steps, rise, run, schrittmass, laufLength, angle, valid, comfort, ...)
  */
-export function calculateAuto(heightCm, availRunCm, type, podestCm) {
+export function calculateAuto(heightCm, availRunCm, type, podestCm, materialKey) {
     const isAttic = (type === 'dachboden');
     const minRise = isAttic ? ATTIC_MIN_RISE : MIN_RISE;
     const maxRise = isAttic ? ATTIC_MAX_RISE : MAX_RISE;
@@ -32,6 +34,9 @@ export function calculateAuto(heightCm, availRunCm, type, podestCm) {
     if (type === 'viertel' || type === 'halb') {
         effectiveRun = Math.max(availRunCm - wendelAbzug, 80);
     }
+    
+    const material = MATERIAL_DB[materialKey] || MATERIAL_DB.eiche;
+    const materialFactor = material.factor;
     
     let bestN = null, bestS = 0, bestA = 0, bestSchritt = 0, bestScore = Infinity;
     
@@ -52,7 +57,13 @@ export function calculateAuto(heightCm, availRunCm, type, podestCm) {
             if (schritt < MIN_SCHRITTMASS - 2 || schritt > MAX_SCHRITTMASS + 2) continue;
         }
         
-        const score = Math.abs(schritt - IDEAL_SCHRITTMASS) * 2 + Math.abs(s - IDEAL_RISE) * 1.5;
+        const angle = Math.atan(s / a) * 180 / Math.PI;
+        // Bestrafung für steile Treppen, gewichtet mit Materialfaktor
+        const anglePenalty = angle > 35 ? (angle - 35) * 0.5 * materialFactor : 0;
+        const score = Math.abs(schritt - IDEAL_SCHRITTMASS) * 2 
+                    + Math.abs(s - IDEAL_RISE) * 1.5 
+                    + anglePenalty;
+                    
         if (bestN === null || score < bestScore) {
             bestN = n; bestS = s; bestA = a; bestSchritt = schritt; bestScore = score;
         }
@@ -88,6 +99,12 @@ export function calculateAuto(heightCm, availRunCm, type, podestCm) {
 
 /**
  * Manuelle Berechnung mit vorgegebenen Steigung/Auftritt.
+ * @param {number} heightCm - Geschosshöhe in cm
+ * @param {number} steigungCm - gewünschte Steigung in cm
+ * @param {number} auftrittCm - gewünschter Auftritt in cm
+ * @param {string} type - Treppentyp
+ * @param {number} podestCm - Podesttiefe in cm
+ * @returns {object} Berechnungsergebnis
  */
 export function calculateManual(heightCm, steigungCm, auftrittCm, type, podestCm) {
     const isAttic = (type === 'dachboden');
@@ -117,6 +134,8 @@ export function calculateManual(heightCm, steigungCm, auftrittCm, type, podestCm
 
 /**
  * Berechnet die empfohlene Lauflänge für eine gegebene Höhe (Idealfall).
+ * @param {number} h - Geschosshöhe in cm
+ * @returns {number} empfohlene Lauflänge in cm
  */
 export function computeIdealLength(h) {
     const idealRise = IDEAL_RISE;
@@ -124,4 +143,53 @@ export function computeIdealLength(h) {
     let n = Math.round(h / idealRise);
     n = Math.max(3, n);
     return (n - 1) * idealRun;
+}
+
+/**
+ * Prüft die geometrischen Randbedingungen der gewählten Befestigungsart.
+ * Gibt ein Objekt mit Status und Meldung zurück (Warnung, kein harter Fehler).
+ * @param {string} befestigung - 'wange', 'bolzen', 'kragarm'
+ * @param {number} breite - Laufbreite in cm
+ * @param {boolean} podestUsed - ob ein Podest verwendet wird
+ * @param {number} laufLength - gesamte Lauflänge in cm
+ * @returns {{ok: boolean, message: string}}
+ */
+export function validateBefestigung(befestigung, breite, podestUsed, laufLength) {
+    let ok = true;
+    let message = '';
+    
+    switch (befestigung) {
+        case 'bolzen':
+            if (breite > 150) {
+                ok = false;
+                message = 'Bolzentreppe: Maximale Breite 150 cm empfohlen (Wandabstand).';
+            } else {
+                message = 'Bolzentreppe: Wandseitige Befestigung erforderlich.';
+            }
+            break;
+        case 'kragarm':
+            if (podestUsed) {
+                ok = false;
+                message = 'Kragarmtreppe: Podest nicht zulässig (freitragend).';
+            } else if (laufLength > 400) {
+                ok = false;
+                message = 'Kragarmtreppe: Maximale Lauflänge 400 cm empfohlen.';
+            } else {
+                message = 'Kragarmtreppe: Massiver Untergrund (z. B. Betondecke) erforderlich.';
+            }
+            break;
+        default: // wange
+            message = 'Wangenkonstruktion: universell einsetzbar.';
+    }
+    return { ok, message };
+}
+
+/**
+ * Berechnet die ungefähre Wangenlänge (Schräge) der Treppe.
+ * @param {number} heightCm - Geschosshöhe in cm
+ * @param {number} laufLength - horizontale Lauflänge in cm
+ * @returns {number} Wangenlänge in cm
+ */
+export function computeWangenLaenge(heightCm, laufLength) {
+    return Math.sqrt(heightCm * heightCm + laufLength * laufLength);
 }

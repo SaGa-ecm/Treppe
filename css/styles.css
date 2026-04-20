@@ -286,7 +286,6 @@ button {
     color: var(--text-secondary);
     text-align: center;
 }
-/* Tooltip-Styles werden in Teil 2 fortgesetzt */
 .tooltip-text {
     visibility: hidden;
     background: #2e241e;
