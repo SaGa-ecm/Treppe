@@ -116,11 +116,44 @@
             background: #4a3a2a;
         }
         @media print {
-            body { background: white; padding: 0.5cm; }
-            .container { box-shadow: none; padding: 0; }
-            .print-btn { display: none; }
-            .summary { background: #f9f9f9; border: 1px solid #ccc; }
-            th { background: #eee; border-bottom-color: #999; }
+            body {
+                background: white !important;
+                padding: 0.5cm;
+                color: black !important;
+            }
+            .container {
+                box-shadow: none;
+                padding: 0;
+                background: white !important;
+            }
+            .print-btn {
+                display: none;
+            }
+            .summary {
+                background: white !important;
+                border: 1px solid black !important;
+                color: black !important;
+            }
+            .summary-label, .summary-value, .summary-unit {
+                color: black !important;
+            }
+            th {
+                background: #eee !important;
+                border-bottom-color: black !important;
+                color: black !important;
+            }
+            td {
+                border-bottom-color: #999 !important;
+                color: black !important;
+            }
+            .footer-note {
+                background: white !important;
+                border-left-color: black !important;
+                color: black !important;
+            }
+            h1, .subtitle, h2 {
+                color: black !important;
+            }
         }
         .no-data {
             color: #b55a2b;
@@ -140,9 +173,14 @@
         <!-- Dynamisch gefüllt -->
     </div>
     
-    <h2 style="margin: 24px 0 8px; font-size: 1.5rem;">📋 Positionen</h2>
-    <div id="tableContainer">
-        <!-- Dynamisch gefüllt -->
+    <h2 style="margin: 24px 0 8px; font-size: 1.5rem;">📋 Übersicht Hauptbauteile</h2>
+    <div id="overviewTableContainer">
+        <!-- Übersichtstabelle -->
+    </div>
+    
+    <h2 style="margin: 32px 0 8px; font-size: 1.5rem;">🔧 Detaillierte Stückliste (BOM)</h2>
+    <div id="bomTableContainer">
+        <!-- BOM-Tabelle -->
     </div>
     
     <div class="footer-note">
@@ -155,14 +193,14 @@
     (function() {
         const dataStr = localStorage.getItem('treppeData');
         if (!dataStr) {
-            document.getElementById('tableContainer').innerHTML = '<p class="no-data">Keine Daten vorhanden. Bitte zuerst im Treppenplaner eine Berechnung durchführen.</p>';
+            document.getElementById('overviewTableContainer').innerHTML = '<p class="no-data">Keine Daten vorhanden. Bitte zuerst im Treppenplaner eine Berechnung durchführen.</p>';
             return;
         }
         
         try {
             const data = JSON.parse(dataStr);
             
-            // Zusammenfassung (Werte mit einer Dezimalstelle formatieren)
+            // Zusammenfassung (Werte formatieren)
             const heightFormatted = typeof data.height === 'number' ? data.height.toFixed(1) : data.height;
             const laufLengthFormatted = typeof data.laufLength === 'number' ? data.laufLength.toFixed(1) : data.laufLength;
             
@@ -198,12 +236,12 @@
             `;
             document.getElementById('summaryContainer').innerHTML = summaryHtml;
             
-            // Tabelle
-            let tableHtml = `<table>
+            // Übersichtstabelle (wie bisher, aber mit Überschrift)
+            let overviewHtml = `<table>
                 <thead><tr><th>Position</th><th>Menge</th><th>Material</th><th>Maße (L×B×D)</th><th>Hinweis</th></tr></thead><tbody>`;
             
             data.positionen.forEach(pos => {
-                tableHtml += `<tr>
+                overviewHtml += `<tr>
                     <td>${pos.pos}</td>
                     <td class="amount">${pos.menge}</td>
                     <td>${pos.material}</td>
@@ -211,11 +249,31 @@
                     <td>${pos.hinweis}</td>
                 </tr>`;
             });
-            tableHtml += `</tbody></table>`;
-            document.getElementById('tableContainer').innerHTML = tableHtml;
+            overviewHtml += `</tbody></table>`;
+            document.getElementById('overviewTableContainer').innerHTML = overviewHtml;
+            
+            // Detaillierte BOM-Tabelle
+            if (data.bomDetails && data.bomDetails.length > 0) {
+                let bomHtml = `<table>
+                    <thead><tr><th>Teil</th><th>Anzahl</th><th>Material / Typ</th><th>Abmessungen / Spezifikation</th><th>Verwendung</th></tr></thead><tbody>`;
+                
+                data.bomDetails.forEach(item => {
+                    bomHtml += `<tr>
+                        <td>${item.bezeichnung}</td>
+                        <td class="amount">${item.menge}</td>
+                        <td>${item.typ}</td>
+                        <td>${item.masse || '—'}</td>
+                        <td>${item.hinweis || '—'}</td>
+                    </tr>`;
+                });
+                bomHtml += `</tbody></table>`;
+                document.getElementById('bomTableContainer').innerHTML = bomHtml;
+            } else {
+                document.getElementById('bomTableContainer').innerHTML = '<p>Keine detaillierten Verbindungsmittel verfügbar.</p>';
+            }
             
         } catch(e) {
-            document.getElementById('tableContainer').innerHTML = '<p class="no-data">Fehler beim Laden der Daten.</p>';
+            document.getElementById('overviewTableContainer').innerHTML = '<p class="no-data">Fehler beim Laden der Daten.</p>';
         }
     })();
 </script>

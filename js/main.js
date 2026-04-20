@@ -2,7 +2,7 @@
 import { syncSliderInput, initTheme, updateToggleIcon, getMindestbreite, getLasten, getMindestlast } from './ui.js';
 import { 
     calculateAuto, calculateManual, computeIdealLength, 
-    validateBefestigung, computeWangenLaenge, generateMaterialListe 
+    validateBefestigung, computeWangenLaenge, generateBOM, generateMaterialListe 
 } from './calculator.js';
 import { drawCanvas } from './drawing.js';
 import { 
@@ -187,7 +187,6 @@ function renderAll() {
     befestigungStatus.style.color = befValid.ok ? '#2e7d32' : '#b55a2b';
     
     const geometrieOk = p.valid;
-    // Gesamtvalidität: Geometrie + Breite + Last + Dicke + Platz (Befestigung ist nur Warnung)
     const gesamtValid = geometrieOk && breiteOk && lastOk && dickeOk && passtInPlatz;
     
     normTag.textContent = gesamtValid ? (p.isAttic ? '✅ Raumspar' : '✅ DIN') : '⚠️ außerhalb Norm';
@@ -255,11 +254,13 @@ function renderAll() {
     // Canvas zeichnen
     drawCanvas(p, type, podest, ctx, 500, 280);
     
-    // === Materialliste generieren (NUR EINMAL) ===
+    // === NEU: BOM generieren (vollständig) ===
     const material = MATERIAL_DB[materialKey] || MATERIAL_DB.eiche;
-    const positionen = generateMaterialListe(p, type, podest, breite, materialKey, befestigung, dicke);
+    const bom = generateBOM(p, type, podest, breite, materialKey, befestigung, dicke);
+    const positionen = bom.positionen;
+    const bomDetails = bom.bomDetails;
     
-    // UI: Materialliste rendern
+    // UI: Materialliste (Übersicht) rendern
     let tableHtml = `<table class="material-table">
         <thead><tr><th>Position</th><th>Menge</th><th>Material</th><th>Maße (L×B×D)</th><th>Hinweis</th></tr></thead><tbody>`;
     positionen.forEach(item => {
@@ -274,7 +275,7 @@ function renderAll() {
     tableHtml += `</tbody></table>`;
     materialListeContainer.innerHTML = tableHtml;
     
-    // === Daten für Druckansicht speichern ===
+    // === Daten für Druckansicht speichern (jetzt mit BOM-Details) ===
     const druckDaten = {
         height: height,
         laufLength: berechneteLauflaenge,
@@ -284,11 +285,11 @@ function renderAll() {
         angle: p.angle.toFixed(1),
         breite: breite,
         materialName: material.name,
-        positionen: positionen
+        positionen: positionen,
+        bomDetails: bomDetails          // <-- NEU: detaillierte BOM
     };
     localStorage.setItem('treppeData', JSON.stringify(druckDaten));
 }
-
 // === Manuelle Modus-Steuerung ===
 function activateManualMode() {
     manuellerModus = true;
