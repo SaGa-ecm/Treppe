@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treppenplaner · Glossar</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+        }
+        body {
+            background: #f5f3f0;
+            padding: 30px 20px;
+            color: #2e241e;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 24px;
+            padding: 35px 30px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2e241e;
+            border-bottom: 3px solid #b08968;
+            padding-bottom: 15px;
+        }
+        h2 {
+            font-size: 1.6rem;
+            margin: 30px 0 15px;
+            color: #4a3a2a;
+            border-left: 4px solid #b08968;
+            padding-left: 16px;
+        }
+        .glossar-eintrag {
+            margin-bottom: 30px;
+            border-left: 3px solid #ddd2c8;
+            padding-left: 20px;
+        }
+        .begriff {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #2e241e;
+            margin-bottom: 5px;
+        }
+        .definition {
+            font-weight: 600;
+            color: #5a4a3e;
+            margin-bottom: 8px;
+        }
+        .erklaerung {
+            color: #3a2e26;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+        .normbezug {
+            font-size: 0.85rem;
+            color: #6b5a4e;
+            margin-top: 6px;
+            font-style: italic;
+        }
+        .toc {
+            background: #f1ebe6;
+            border-radius: 16px;
+            padding: 18px 20px;
+            margin: 20px 0 30px;
+            border: 1px solid #ddd2c8;
+        }
+        .toc a {
+            color: #2e241e;
+            text-decoration: none;
+            margin-right: 15px;
+            line-height: 2;
+        }
+        .toc a:hover {
+            text-decoration: underline;
+        }
+        .backlink {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd2c8;
+            text-align: center;
+        }
+        .backlink a {
+            color: #b08968;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        @media print {
+            body { background: white; }
+            .container { box-shadow: none; }
+            .backlink { display: none; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📚 Treppenplaner · Glossar</h1>
+    <p style="margin-bottom: 20px; color: #5a4a3e;">Erläuterung der Fachbegriffe, Normen und Berechnungsgrundlagen des Treppenplaners.</p>
+    
+    <div class="toc">
+        <strong>Navigation:</strong><br>
+        <a href="#auftritt">Auftritt</a> · <a href="#befestigung">Befestigungsarten</a> · <a href="#dachboden">Dachbodentreppe</a> · 
+        <a href="#din18065">DIN 18065</a> · <a href="#eigengewicht">Eigengewicht</a> · <a href="#eurocode1">Eurocode 1</a> · 
+        <a href="#geschosshoehe">Geschosshöhe</a> · <a href="#laufbreite">Laufbreite</a> · <a href="#lauflaenge">Lauflänge</a> · 
+        <a href="#nutzlast">Nutzlast</a> · <a href="#podest">Podest</a> · <a href="#schrittmass">Schrittmaß</a> · 
+        <a href="#steigung">Steigung</a> · <a href="#stufendicke">Stufendicke</a> · <a href="#wange">Wange</a> · 
+        <a href="#wendelung">Wendelung</a> · <a href="#winkel">Winkel</a>
+    </div>
+
+    <!-- ========== Glossareinträge ========== -->
+
+    <div class="glossar-eintrag" id="auftritt">
+        <div class="begriff">Auftritt (a)</div>
+        <div class="definition">Tiefe der waagerechten Trittfläche einer Stufe.</div>
+        <div class="erklaerung">
+            Der Auftritt ist das Maß von Vorderkante zu Vorderkante zweier aufeinanderfolgender Stufen. 
+            Nach DIN 18065 muss der Auftritt bei notwendigen Treppen in Wohngebäuden mindestens 24 cm betragen; üblich sind 26–32 cm. 
+            Ein ausreichender Auftritt gewährleistet sicheres und bequemes Begehen. 
+            Im Treppenplaner wird der Auftritt automatisch berechnet oder kann manuell vorgegeben werden.
+        </div>
+        <div class="normbezug">Quelle: DIN 18065 (Z1)</div>
+    </div>
+
+    <div class="glossar-eintrag" id="befestigung">
+        <div class="begriff">Befestigungsarten</div>
+        <div class="definition">Konstruktive Methoden zur Lagerung und Fixierung der Treppe.</div>
+        <div class="erklaerung">
+            <strong>Wangenkonstruktion:</strong> Die Stufen sind seitlich in tragende Bretter (Wangen) eingelassen oder darauf montiert. Geeignet für nahezu alle Einbausituationen.<br>
+            <strong>Bolzentreppe:</strong> Die Stufen sind über Bolzenanker direkt mit einer tragfähigen Wand verbunden. Setzt eine massive Wand voraus; empfohlene maximale Laufbreite 150 cm.<br>
+            <strong>Kragarmtreppe:</strong> Die Stufen sind einseitig in einer Wand oder Konsole eingespannt und ragen frei aus. Erfordert einen massiven Untergrund (z. B. Betondecke) und wird in der Regel für Lauflängen bis 400 cm empfohlen.
+        </div>
+        <div class="normbezug">Quelle: Fachregeln des Treppenbaus (Z2)</div>
+    </div>
+
+    <div class="glossar-eintrag" id="dachboden">
+        <div class="begriff">Dachbodentreppe (Raumspartreppe)</div>
+        <div class="definition">Treppe, die nicht den Anforderungen einer notwendigen Treppe entsprechen muss.</div>
+        <div class="erklaerung">
+            Dachbodentreppen dienen nur gelegentlichem Zugang zu untergeordneten Räumen. 
+            Die Normwerte sind gelockert: Steigungen zwischen 18 cm und 26 cm, Auftritte ab 15 cm sind zulässig. 
+            Das Schrittmaß wird nicht streng geprüft.
+        </div>
+        <div class="normbezug">Quelle: DIN 18065 (Z1)</div>
+    </div>
+
+    <div class="glossar-eintrag" id="din18065">
+        <div class="begriff">DIN 18065</div>
+        <div class="definition">Deutsche Norm für Gebäudetreppen – Maße, Begriffe, Sicherheitsanforderungen.</div>
+        <div class="erklaerung">
+            Die DIN 18065 definiert Mindest- und Höchstmaße für Steigung, Auftritt, Laufbreite sowie die Schrittmaßregel (2×Steigung + Auftritt ≈ 59–65 cm). 
+            Sie unterscheidet zwischen notwendigen Treppen (z. B. Hauptzugang) und nicht notwendigen Treppen (z. B. Dachboden). 
+            Die im Treppenplaner verwendeten Grenzwerte basieren auf dieser Norm.
+        </div>
+        <div class="normbezug">Quelle: DIN 18065:2023-06 (Z1)</div>
+    </div>
+
+    <div class="glossar-eintrag" id="eigengewicht">
+        <div class="begriff">Eigengewicht</div>
+        <div class="definition">Gewicht der Treppenkonstruktion selbst (ohne Nutzlast).</div>
+        <div class="erklaerung">
+            Das Eigengewicht hängt vom Material (Dichte) und den Abmessungen ab. 
+            Beispiel: Eichenholz ca. 700 kg/m³, Fichte ca. 500 kg/m³, Stahlbeton ca. 2500 kg/m³. 
+            Im Treppenplaner wird das Eigengewicht bei der Materialauswahl näherungsweise berücksichtigt; für statische Nachweise ist eine genauere Berechnung erforderlich.
+        </div>
+        <div class="normbezug">Quelle: DIN EN 1991-1-1 (Eurocode 1), Tabellenwerte (Z1)</div>
+    </div>
+
+    <div class="glossar-eintrag" id="eurocode1">
+        <div class="begriff">Eurocode 1 (DIN EN 1991-1-1)</div>
+        <div class="definition">Europäische Norm für Einwirkungen auf Tragwerke – Lastannahmen.</div>
+        <div class="erklaerung">
+            Eurocode 1 legt die anzusetzenden Nutz- und Eigenlasten fest. 
+            Für Treppen in Wohngebäuden gilt eine Flächenlast von 3,0 kN/m² (≈300 kg/m²) sowie eine Einzellast von 2,0 kN (≈200 kg). 
+            Für öffentliche Gebäude sind 5,0 kN/m² (≈500 kg/m²) anzusetzen. 
+            Der Treppenplaner zeigt diese Werte an und prüft, ob die gewünschte Nutzlast den Mindestwert erreicht.
+        </div>
+        <div class="normbezug">Quelle: DIN EN 1991-1-1/NA (Z1)</div>
+    </div>
+
+    <div class="glossar-eintrag" id="geschosshoehe">
+        <div class="begriff">Geschosshöhe</div>
+        <div class="definition">Vertikale Distanz von Oberkante Fertigfußboden (OKFF) unten bis OKFF oben.</div>
+        <div class="erklaerung">
+            Die Geschosshöhe bestimmt zusammen mit der gewünschten Stufenanzahl die Steigung. 
+            Sie wird im Treppenplaner als Ausgangswert für alle Berechnungen verwendet. 
+            Typische Werte liegen zwischen 250 cm und 300 cm (Wohngebäude).
+        </div>
+        <div class="normbezug">Quelle: DIN 18065 (Z1)</div>
+    </div>
+
+    <div class="glossar-eintrag" id="laufbreite">
+        <div class="begriff">Nutzbare Laufbreite</div>
+        <div class="definition">Lichtes Maß zwischen begrenzenden Wänden oder Handläufen, in dem die Treppe begehbar ist.</div>
+        <div class="erklaerung">
+            Nach DIN 18065 beträgt die Mindestlaufbreite für Wohngebäude 80 cm, für öffentliche Gebäude 100 cm. 
+            Der Treppenplaner prüft diesen Wert und gibt bei Unterschreitung eine Warnung aus.
+        </div>
+        <div class="normbezug">Quelle: DIN 18065 (Z1)</div>
+    </div>
+
+    <div class="glossar-eintrag" id="lauflaenge">
+        <div class="begriff">Lauflänge</div>
+        <div class="definition">Horizontale Entfernung vom Antritt bis zum Austritt der Treppe.</div>
+        <div class="erklaerung">
+            Die Lauflänge ergibt sich aus (Stufenanzahl − 1) × Auftritt zuzüglich eventueller Podesttiefen. 
+            Sie muss in den verfügbaren Platz passen. Der Treppenplaner vergleicht die berechnete Lauflänge mit der eingegebenen horizontalen Entfernung.
+        </div>
+        <div class="normbezug">Quelle: DIN 18065 (Z1)</div>
+    </div>
+
+    <div class="glossar-eintrag" id="nutzlast">
+        <div class="begriff">Nutzlast</div>
+        <div class="definition">Last, die durch Personen, Möbel oder sonstige Nutzung auf die Treppe einwirkt.</div>
+        <div class="erklaerung">
+            Die Nutzlast wird in kN/m² (Kilonewton pro Quadratmeter) angegeben. 
+            1 kN/m² entspricht etwa 100 kg/m². Der Treppenplaner ermöglicht die freie Wahl der Nutzlast, warnt jedoch bei Unterschreitung der normativen Mindestwerte (300 kg/m² für Wohngebäude, 500 kg/m² für öffentliche Gebäude).
+        </div>
+        <div class="normbezug">Quelle: DIN EN 1991-1-1 (Eurocode 1) (Z1)</div>
+    </div>
+
+    <div class="glossar-eintrag" id="podest">
+        <div class="begriff">Podest</div>
+        <div class="definition">Waagerechte Plattform innerhalb oder am Ende einer Treppenanlage.</div>
+        <div class="erklaerung">
+            Podeste dienen als Ruhefläche oder Richtungswechsel. 
+            Die Mindesttiefe eines Zwischenpodests beträgt in der Regel 80 cm, muss aber mindestens der nutzbaren Laufbreite entsprechen. 
+            Im Treppenplaner kann bei der Podesttreppe die Podesttiefe eingestellt werden.
+        </div>
+        <div class="normbezug">Quelle: DIN 18065 (Z1)</div>
+    </div>
+
+    <div class="glossar-eintrag" id="schrittmass">
+        <div class="begriff">Schrittmaß</div>
+        <div class="definition">Maß für die Bequemlichkeit einer Treppe; Formel: 2 × Steigung + Auftritt.</div>
+        <div class="erklaerung">
+            Das Schrittmaß soll zwischen 59 cm und 65 cm liegen (Ideal 62–63 cm). 
+            Diese Regel basiert auf der durchschnittlichen Schrittlänge des Menschen. 
+            Werte außerhalb dieses Bereichs führen zu unbequemen oder unsicheren Treppen. 
+            Der Treppenplaner berechnet das Schrittmaß und zeigt eine Warnung bei Abweichung an.
+        </div>
+        <div class="normbezug">Quelle: DIN 18065 (Z1)</div>
+    </div>
+
+    <div class="glossar-eintrag" id="steigung">
+        <div class="begriff">Steigung (s)</div>
+        <div class="definition">Höhenunterschied zwischen zwei aufeinanderfolgenden Trittstufen.</div>
+        <div class="erklaerung">
+            Die Steigung ergibt sich aus Geschosshöhe geteilt durch Stufenanzahl. 
+            Nach DIN 18065 muss sie bei Wohngebäuden zwischen 14 cm und 19 cm liegen. 
+            Zu hohe Steigungen ermüden, zu niedrige führen zu kurzen Schritten.
+        </div>
+        <div class="normbezug">Quelle: DIN 18065 (Z1)</div>
+    </div>
+
+    <div class="glossar-eintrag" id="stufendicke">
+        <div class="begriff">Stufendicke</div>
+        <div class="definition">Materialstärke der Trittstufe.</div>
+        <div class="erklaerung">
+            Die erforderliche Dicke hängt vom Material und der Spannweite ab. 
+            Empfohlene Mindestdicken: Holz (Eiche/Buche) 40 mm, Fichte 50 mm, Stahlbeton 80 mm. 
+            Der Treppenplaner prüft, ob die gewählte Dicke den Materialanforderungen genügt.
+        </div>
+        <div class="normbezug">Quelle: Fachregeln, Erfahrungswerte (Z2)</div>
+    </div>
+
+    <div class="glossar-eintrag" id="wange">
+        <div class="begriff">Wange</div>
+        <div class="definition">Seitliches Tragelement, das die Stufen aufnimmt.</div>
+        <div class="erklaerung">
+            Wangen können aus Holz, Stahl oder Beton bestehen. 
+            Die Mindesthöhe einer Holzwange beträgt nach Faustregel 26 cm bei 5 cm Dicke. 
+            Der Treppenplaner berechnet die ungefähre Wangenlänge anhand der Geometrie.
+        </div>
+        <div class="normbezug">Quelle: Fachregeln (Z2)</div>
+    </div>
+
+    <div class="glossar-eintrag" id="wendelung">
+        <div class="begriff">Wendelung</div>
+        <div class="definition">Richtungsänderung einer Treppe durch gebogene oder gewinkelte Läufe.</div>
+        <div class="erklaerung">
+            Der Treppenplaner unterscheidet Viertelwendelung (90°) und Halbwendelung (180°). 
+            Bei der Berechnung wird ein pauschaler Abzug von der verfügbaren Lauflänge vorgenommen (30 cm bei Viertel-, 60 cm bei Halbwendelung), um den Platzbedarf der Wendelstufen näherungsweise zu berücksichtigen. 
+            Die Visualisierung zeigt eine schematische Draufsicht.
+        </div>
+        <div class="normbezug">Quelle: DIN 18065 (Z1)</div>
+    </div>
+
+    <div class="glossar-eintrag" id="winkel">
+        <div class="begriff">Steigungswinkel</div>
+        <div class="definition">Neigung der Treppe, berechnet aus arctan(Steigung / Auftritt).</div>
+        <div class="erklaerung">
+            Übliche Winkel liegen zwischen 25° und 38°. 
+            Flachere Treppen (< 30°) gelten als bequem, steilere (> 35°) als raumsparend, aber anstrengender. 
+            Der Treppenplaner zeigt den berechneten Winkel an und verwendet ihn für die Visualisierung.
+        </div>
+        <div class="normbezug">Quelle: Trigonometrie (Z3)</div>
+    </div>
+
+    <!-- ========== Ende Glossar ========== -->
+
+    <div class="backlink">
+        <a href="index.html">← Zurück zum Treppenplaner</a>
+    </div>
+</div>
+</body>
+</html>

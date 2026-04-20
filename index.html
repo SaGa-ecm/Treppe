@@ -14,8 +14,9 @@
 <body>
 <div class="card">
     <div style="display: flex; align-items: center; margin-bottom: 10px;">
-        <h1 style="margin-bottom: 0;">🪵 Treppenplaner · kostenlos - spendenbasiert</h1>
+        <h1 style="margin-bottom: 0;">Treppenplaner · kostenlos - spendenbasiert</h1>
         <div class="header-actions">
+            <a href="glossar.html" target="_blank" style="text-decoration: none; color: var(--text-primary); margin-right: 12px; font-size: 0.95rem; font-weight: 500;">Fachbegriffe erklärt</a>
             <button class="theme-toggle" id="themeToggle" title="Hell-/Dunkelmodus">
                 <span id="themeIcon">🌙</span>
                 <span id="themeText">Dunkel</span>
@@ -31,7 +32,7 @@
     
     <!-- Kurze Einführung für bessere Verständlichkeit -->
     <div style="background: var(--badge-bg); border-radius: 16px; padding: 12px 16px; margin-bottom: 20px; color: var(--text-primary);">
-        <strong>📘 So funktioniert's:</strong> Geben Sie Geschosshöhe und verfügbaren Platz ein. 
+        <strong>So funktioniert's:</strong> Geben Sie Geschosshöhe und verfügbaren Platz ein. 
         Das Tool findet automatisch eine normgerechte Treppe. Über die <span class="has-tooltip" style="border-bottom: 1px dashed;">Tooltips <span class="tooltip-text">Fahren Sie mit der Maus über unterstrichene Begriffe oder Symbole, um Erklärungen zu erhalten.</span></span> 
         erhalten Sie zu jedem Fachbegriff eine kurze Erläuterung.
     </div>
@@ -41,7 +42,7 @@
         <div class="panel">
             <div class="slider-group">
                 <label>
-                    <span class="has-tooltip">📏 Geschosshöhe 
+                    <span class="has-tooltip">Geschosshöhe 
                         <span class="tooltip-text">Höhe von OKFF unten bis OKFF oben.</span>
                     </span>
                     <span class="value-badge" id="heightDisplay">200 cm</span>
@@ -56,7 +57,7 @@
 
             <div class="slider-group">
                 <label>
-                    <span class="has-tooltip">📐 Horizontale Entfernung 
+                    <span class="has-tooltip">Horizontale Entfernung 
                         <span class="tooltip-text">Verfügbarer Platz (Lauflänge).</span>
                     </span>
                     <span class="value-badge" id="distanceDisplay">100 cm</span>
@@ -71,7 +72,7 @@
             
             <div style="margin: 10px 0 20px;">
                 <label>
-                    <span class="has-tooltip">🧩 Treppenform 
+                    <span class="has-tooltip">Treppenform 
                         <span class="tooltip-text">Gerade, gewendelt, Podest oder Dachboden (steil).</span>
                     </span>
                 </label>
@@ -80,13 +81,13 @@
                     <option value="viertel">Viertelgewendelt (90°)</option>
                     <option value="halb">Halbgewendelt (180°)</option>
                     <option value="podest">Podesttreppe</option>
-                    <option value="dachboden">🪜 Dachbodentreppe (Raumspar)</option>
+                    <option value="dachboden">Dachbodentreppe (Raumspar)</option>
                 </select>
             </div>
             
             <div id="podestGroup" style="display: none;">
                 <label>
-                    <span class="has-tooltip">🛑 Podesttiefe 
+                    <span class="has-tooltip">Podesttiefe 
                         <span class="tooltip-text">Länge des Podests (min. 80 cm).</span>
                     </span>
                     <span class="value-badge" id="podestDisplay">100 cm</span>
@@ -98,7 +99,7 @@
             <!-- Nutzbare Laufbreite -->
             <div class="slider-group">
                 <label>
-                    <span class="has-tooltip">📏 Nutzbare Laufbreite 
+                    <span class="has-tooltip">Nutzbare Laufbreite 
                         <span class="tooltip-text">Lichtes Maß zwischen Wänden/Handläufen.<br>Min. 80 cm (Wohnen) / 100 cm (öffentlich).</span>
                     </span>
                     <span class="value-badge" id="breiteDisplay">100 cm</span>
@@ -114,7 +115,7 @@
             <!-- Gebäudetyp -->
             <div style="margin: 10px 0 20px;">
                 <label>
-                    <span class="has-tooltip">🏢 Gebäudetyp 
+                    <span class="has-tooltip">Gebäudetyp 
                         <span class="tooltip-text">Bestimmt Mindestbreite und normative Lasten (Eurocode 1).</span>
                     </span>
                 </label>
@@ -127,7 +128,7 @@
             <!-- Materialauswahl -->
             <div style="margin: 10px 0 20px;">
                 <label>
-                    <span class="has-tooltip">🪵 Material 
+                    <span class="has-tooltip">Material 
                         <span class="tooltip-text">Holzart oder Baustoff. Beeinflusst Eigengewicht und die automatische Optimierung (schweres Material → flachere Treppe).</span>
                     </span>
                 </label>
@@ -143,7 +144,7 @@
             <!-- Befestigungsart -->
             <div style="margin: 10px 0 20px;">
                 <label>
-                    <span class="has-tooltip">🔩 Befestigung 
+                    <span class="has-tooltip">Befestigung 
                         <span class="tooltip-text">Konstruktive Ausbildung:<br>Wangen-, Bolzen- oder Kragarmtreppe.<br>Wangen: universell. Bolzen: benötigt tragfähige Wand.<br>Kragarm: freitragend, massiver Untergrund erforderlich.</span>
                     </span>
                 </label>
@@ -157,7 +158,7 @@
             <!-- Gewünschte Nutzlast -->
             <div class="slider-group">
                 <label>
-                    <span class="has-tooltip">⚖️ Gewünschte Nutzlast 
+                    <span class="has-tooltip">Gewünschte Nutzlast 
                         <span class="tooltip-text">Flächenlast in kg/m².<br>Normatives Minimum: 300 (Wohnen) / 500 (öffentlich).</span>
                     </span>
                     <span class="value-badge" id="nutzlastDisplay">300 kg/m²</span>
@@ -172,11 +173,11 @@
 
             <!-- Manuelle Stufenmaße -->
             <div class="manual-section">
-                <p style="font-weight:600; margin-bottom:12px; color:var(--text-primary);">🔧 Manuelle Stufenmaße (optional)</p>
+                <p style="font-weight:600; margin-bottom:12px; color:var(--text-primary);">Manuelle Stufenmaße (optional)</p>
                 
                 <div class="slider-group">
                     <label>
-                        <span class="has-tooltip">📏 Auftritt (a)
+                        <span class="has-tooltip">Auftritt (a)
                             <span class="tooltip-text">Tiefe der Trittfläche.<br>Norm: 26–32 cm (notwendig).</span>
                         </span>
                         <span class="value-badge" id="auftrittDisplay">29.0 cm</span>
@@ -187,7 +188,7 @@
                 
                 <div class="slider-group">
                     <label>
-                        <span class="has-tooltip">📐 Steigung (s)
+                        <span class="has-tooltip">Steigung (s)
                             <span class="tooltip-text">Höhe einer Stufe.<br>Norm: 14–19 cm.</span>
                         </span>
                         <span class="value-badge" id="steigungDisplay">17.0 cm</span>
@@ -198,7 +199,7 @@
                 
                 <div class="slider-group">
                     <label>
-                        <span class="has-tooltip">🧱 Stufendicke
+                        <span class="has-tooltip">Stufendicke
                             <span class="tooltip-text">Materialstärke der Trittstufe.<br>Empfohlen: ≥50 mm (Holz) / ≥80 mm (Beton).</span>
                         </span>
                         <span class="value-badge" id="dickeDisplay">50 mm</span>
@@ -212,7 +213,7 @@
             
             <div style="background:var(--badge-bg); border-radius:20px; padding:4px 16px; margin: 20px 0;">
                 <p style="display:flex; gap:12px; align-items:center; margin:10px 0; color:var(--text-primary);">
-                    <span class="has-tooltip" style="font-weight:600;">🪜 Schrittmaß (2s+a): 
+                    <span class="has-tooltip" style="font-weight:600;">Schrittmaß (2s+a): 
                         <span class="tooltip-text">Idealer Bereich 59–65 cm.<br>Formel: 2×Steigung + Auftritt.</span>
                     </span>
                     <span id="schrittmassValue" style="font-size:1.7rem; font-weight:700;">—</span>
@@ -249,11 +250,11 @@
             </div>
 
             <div style="margin: 18px 0 8px;">
-                <p style="font-weight:600; margin-bottom:8px; display:flex; color:var(--text-primary);">📋 Stufendetails <span style="margin-left:auto; font-weight:400;" id="stepDetailHint"></span></p>
+                <p style="font-weight:600; margin-bottom:8px; display:flex; color:var(--text-primary);">Stufendetails <span style="margin-left:auto; font-weight:400;" id="stepDetailHint"></span></p>
                 <div class="step-list" id="stepListContainer"></div>
             </div>
 
-            <button id="applyRecommendedBtn">✨ Empfohlene Lauflänge für diese Höhe</button>
+            <button id="applyRecommendedBtn">Empfohlene Lauflänge für diese Höhe</button>
         </div>
 
         <!-- RECHTE SEITE: Visualisierung + Bauinfos -->
@@ -268,69 +269,69 @@
             </div>
 
             <div style="margin-top:20px; background:var(--info-bg); border-radius:20px; padding:18px;">
-                <h3 style="display:flex; gap:8px; margin-bottom:14px; font-weight:600; color:var(--text-primary);">🪚 Bauinfos · DIN 18065 & Eurocode 1</h3>
+                <h3 style="display:flex; gap:8px; margin-bottom:14px; font-weight:600; color:var(--text-primary);">Bauinfos · DIN 18065 & Eurocode 1</h3>
                 <ul style="list-style-type:none; padding-left:6px; display:flex; flex-direction:column; gap:12px; color:var(--text-primary);">
-                    <li style="display:flex; gap:12px;" class="has-tooltip">🔹 <strong>Steigung (s):</strong> 14–19 cm · ideal 17 cm <span class="tooltip-text">Maximal 19 cm zulässig.</span></li>
-                    <li style="display:flex; gap:12px;" class="has-tooltip">🔸 <strong>Auftritt (a):</strong> 26–32 cm · ideal 29 cm <span class="tooltip-text">Mindestens 24 cm.</span></li>
-                    <li style="display:flex; gap:12px;" class="has-tooltip">📐 <strong>Schrittmaß 2s+a = 59–65 cm</strong> <span class="tooltip-text">Bequem & sicher.</span></li>
+                    <li style="display:flex; gap:12px;" class="has-tooltip"><strong>Steigung (s):</strong> 14–19 cm · ideal 17 cm <span class="tooltip-text">Maximal 19 cm zulässig.</span></li>
+                    <li style="display:flex; gap:12px;" class="has-tooltip"><strong>Auftritt (a):</strong> 26–32 cm · ideal 29 cm <span class="tooltip-text">Mindestens 24 cm.</span></li>
+                    <li style="display:flex; gap:12px;" class="has-tooltip"><strong>Schrittmaß 2s+a = 59–65 cm</strong> <span class="tooltip-text">Bequem & sicher.</span></li>
                     <li style="display:flex; gap:12px;" id="wangenLaengeLi">
-                        <span>📏 <strong>Wangenlänge (ca.):</strong></span>
+                        <span><strong>Wangenlänge (ca.):</strong></span>
                         <span id="wangenLaenge">—</span>
                     </li>
-                    <li style="display:flex; gap:12px;">🧱 <strong>Wangenholz:</strong> Mindesthöhe 26 cm, Stärke 5 cm</li>
+                    <li style="display:flex; gap:12px;"><strong>Wangenholz:</strong> Mindesthöhe 26 cm, Stärke 5 cm</li>
                     <li style="display:flex; gap:12px;" id="breitenStatusLi">
-                        <span>📊 <strong>Breiten‑Status:</strong></span>
+                        <span><strong>Breiten‑Status:</strong></span>
                         <span id="breitenStatus">konform (≥80 cm)</span>
                     </li>
                     <li style="display:flex; gap:12px;" class="has-tooltip">
-                        <span>⚖️ <strong>Lastannahmen:</strong></span>
+                        <span><strong>Lastannahmen:</strong></span>
                         <span id="lastAngaben">3,0 kN/m² · 2,0 kN <span style="font-weight:400; opacity:0.8;">(≈300 kg/m², 200 kg)</span></span>
                         <span class="tooltip-text">Flächenlast (kN/m²) und Einzellast pro Stufe (kN).<br>Gemäß DIN EN 1991-1-1 (Eurocode 1).<br>1 kN ≈ 100 kg.</span>
                     </li>
                     <li style="display:flex; gap:12px;" id="dickenStatusLi">
-                        <span>📏 <strong>Stufendicke:</strong></span>
+                        <span><strong>Stufendicke:</strong></span>
                         <span id="dickenStatus">50 mm (empfohlen)</span>
                     </li>
                     <li style="display:flex; gap:12px;" id="befestigungStatusLi">
-                        <span>🔩 <strong>Befestigungs‑Status:</strong></span>
+                        <span><strong>Befestigungs‑Status:</strong></span>
                         <span id="befestigungStatus">konform (Wangenkonstruktion)</span>
                     </li>
                 </ul>
                 
                 <div class="info-note" style="margin-top:16px;">
-                    ⚠️ <strong>Planungshilfe</strong> – Die angegebenen Werte ersetzen keinen statischen Nachweis durch einen Fachplaner.
+                    <strong>Planungshilfe</strong> – Die angegebenen Werte ersetzen keinen statischen Nachweis durch einen Fachplaner.
                 </div>
                 
                 <p style="margin-top:18px; border-top:1px dashed var(--border-medium); padding-top:14px; font-size:0.9rem; color:var(--text-secondary);" id="adviceText">
-                ⚠️ Platz reicht nicht für Normtreppe.
+                Platz reicht nicht für Normtreppe.
                 </p>
             </div>
             
             <!-- Ausklappbare Materialliste -->
             <details style="margin-top: 20px; background: var(--info-bg); border-radius: 20px; padding: 16px; border: 1px solid var(--border-medium);">
                 <summary style="font-weight: 600; cursor: pointer; color: var(--text-primary); user-select: none;">
-                    📋 Materialliste & Zuschnittmaße (ausklappen)
+                    Materialliste & Zuschnittmaße (ausklappen)
                 </summary>
                 <div id="materialListeContainer" style="margin-top: 16px; overflow-x: auto;">
                     <!-- Wird dynamisch durch JavaScript gefüllt -->
                     <p style="color: var(--text-secondary);">Berechnung läuft…</p>
                 </div>
                 <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 12px; border-top: 1px dashed var(--border-medium); padding-top: 10px;">
-                    ⚙️ Alle Maße in cm (L × B × D). Verschnitt und Toleranzen sind eigenverantwortlich zu berücksichtigen.
+                    Alle Maße in cm (L × B × D). Verschnitt und Toleranzen sind eigenverantwortlich zu berücksichtigen.
                 </p>
             </details>
             
             <!-- Druckansicht Button -->
-            <button id="printViewBtn" style="background: var(--accent); color: white; margin-top: 20px;">🖨️ Druckansicht Bauteile</button>
+            <button id="printViewBtn" style="background: var(--accent); color: white; margin-top: 20px;">Druckansicht Bauteile</button>
             
-            <!-- Spendenformular (KORRIGIERT) -->
+            <!-- Spendenformular -->
             <div class="donate-section">
                 <a href="https://www.paypal.com/paypalme/speeduino?message=TreppenTool-Spende" 
                    target="_blank" 
                    class="donate-link"
                    style="display: inline-block; width: 100%; text-decoration: none;">
                     <button type="button" style="background:var(--accent); color:white; border:none; border-radius:60px; padding:12px; font-weight:600; width:100%; cursor:pointer; pointer-events: none;">
-                        💰 Jetzt spenden via PayPal
+                        Jetzt spenden via PayPal
                     </button>
                 </a>
                 <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 8px;">
@@ -339,7 +340,7 @@
             </div>
             
             <div class="footnote">
-                ⚡ Live‑Berechnung · Ampelsystem · Manuelle Stufen
+                Live‑Berechnung · Ampelsystem · Manuelle Stufen
             </div>
         </div>
     </div>
