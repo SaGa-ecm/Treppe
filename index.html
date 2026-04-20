@@ -306,7 +306,7 @@
                 </p>
             </div>
             
-            <!-- NEU: Ausklappbare Materialliste -->
+            <!-- Ausklappbare Materialliste -->
             <details style="margin-top: 20px; background: var(--info-bg); border-radius: 20px; padding: 16px; border: 1px solid var(--border-medium);">
                 <summary style="font-weight: 600; cursor: pointer; color: var(--text-primary); user-select: none;">
                     📋 Materialliste & Zuschnittmaße (ausklappen)
@@ -320,25 +320,22 @@
                 </p>
             </details>
             
-            <!-- Druckansicht Button (KORRIGIERT: innerhalb des Panels) -->
+            <!-- Druckansicht Button -->
             <button id="printViewBtn" style="background: var(--accent); color: white; margin-top: 20px;">🖨️ Druckansicht Bauteile</button>
             
-            <!-- Spendenformular -->
+            <!-- Spendenformular (KORRIGIERT) -->
             <div class="donate-section">
-                <form action="https://www.paypal.com/donate" method="post" target="_blank">
-                    <input type="hidden" name="cmd" value="_donations">
-                    <input type="hidden" name="business" value="speeduino">
-                    <input type="hidden" name="currency_code" value="EUR">
-                    <div style="margin-bottom:8px;">
-                        <input type="number" name="amount" min="1" step="0.01" placeholder="Betrag (EUR)" style="padding:8px; border-radius:20px; border:1px solid var(--border-medium); width:100%; background:var(--stat-bg); color:var(--text-primary);">
-                    </div>
-                    <div style="margin-bottom:8px;">
-                        <input type="text" name="item_name" value="TreppenTool-Spende" placeholder="Verwendungszweck (optional)" style="padding:8px; border-radius:20px; border:1px solid var(--border-medium); width:100%; background:var(--stat-bg); color:var(--text-primary);">
-                    </div>
-                    <button type="submit" style="background:var(--accent); color:white; border:none; border-radius:60px; padding:12px; font-weight:600; width:100%; cursor:pointer;">
+                <a href="https://www.paypal.com/paypalme/speeduino?message=TreppenTool-Spende" 
+                   target="_blank" 
+                   class="donate-link"
+                   style="display: inline-block; width: 100%; text-decoration: none;">
+                    <button type="button" style="background:var(--accent); color:white; border:none; border-radius:60px; padding:12px; font-weight:600; width:100%; cursor:pointer; pointer-events: none;">
                         💰 Jetzt spenden via PayPal
                     </button>
-                </form>
+                </a>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 8px;">
+                    Betrag frei wählbar · Verwendungszweck: TreppenTool-Spende
+                </p>
             </div>
             
             <div class="footnote">
