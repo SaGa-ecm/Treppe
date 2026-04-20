@@ -1,0 +1,72 @@
+mindmap
+  root((Treppenplaner<br>DIN 18065 & EC1))
+    Eingabe
+      Geschosshöhe [160–350 cm]
+      Horizontale Entfernung [80–600 cm]
+      Treppenform
+        Gerade
+        Viertelgewendelt (90°)
+        Halbgewendelt (180°)
+        Podesttreppe
+        Dachbodentreppe (Raumspar)
+      Podesttiefe [80–150 cm]
+      Nutzbare Laufbreite [15–200 cm]
+      Gebäudetyp
+        Wohngebäude (min. 80 cm / 300 kg/m²)
+        Öffentlich (min. 100 cm / 500 kg/m²)
+      Gewünschte Nutzlast [40–1000 kg/m²]
+      Manuelle Stufenmaße (optional)
+        Auftritt (a) [10–50 cm]
+        Steigung (s) [10–25 cm]
+        Stufendicke [5–100 mm]
+    Berechnungskern
+      Automatikmodus
+        Optimale Stufenzahl (Iteration)
+        Schrittmaßregel (2s+a = 59–65 cm)
+        DIN‑Grenzen (s: 14–19, a: 24–32)
+      Manueller Modus
+        Stufenzahl = round(Höhe / s)
+        Lauflänge = (Stufen − 1) × a
+        Prüfung gegen horiz. Entfernung
+      Form‑spezifische Korrekturen
+        Wendelung (Abzug 30/60 cm)
+        Podest (zählt als eine Stufe)
+      Normprüfungen
+        Schrittmaß
+        Steigung / Auftritt
+        Laufbreite
+        Nutzlast
+        Stufendicke
+    Ausgabe & Visualisierung
+      Canvas (500×280)
+        Seitenansicht (gerade, Podest, Dachboden)
+        Draufsicht (gewendelt)
+        Fallback bei ungültigen Werten
+      Statistik-Kacheln
+        Stufenanzahl
+        Steigung (s)
+        Auftritt (a)
+        Steigungswinkel
+      Ampelsystem
+        ✅ DIN‑konform
+        ⚠️ Warnung bei Abweichung
+      Stufendetails (Liste)
+      Bauinfos
+        Normbereiche
+        Breiten‑Status
+        Lastannahmen (kN + kg)
+        Stufendicken‑Status
+    Benutzerinteraktion
+      Live‑Aktualisierung
+      Tooltips (Mouseover)
+      Darkmode (localStorage)
+      Reset zur Automatik
+      Spendenformular
+        Betrag (EUR)
+        Verwendungszweck
+        PayPal‑Integration
+    Technische Basis
+      HTML5
+      CSS3 (Grid, Flex, Variablen)
+      JavaScript (ES6)
+      GitHub Pages
