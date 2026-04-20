@@ -13,15 +13,9 @@
 </head>
 <body>
 <div class="card">
-    <!-- Header mit flex-wrap für Mobile -->
+    <!-- Header ohne Theme-Toggle -->
     <div class="header-container" style="display: flex; align-items: center; margin-bottom: 10px;">
         <h1 style="margin-bottom: 0;">Treppenplaner · kostenlos - spendenbasiert</h1>
-        <div class="header-actions">
-            <button class="theme-toggle" id="themeToggle" title="Hell-/Dunkelmodus">
-                <span id="themeIcon">🌙</span>
-                <span id="themeText">Dunkel</span>
-            </button>
-        </div>
     </div>
     <div class="subtitle">
         Schrittmaßregel · Laufbreite · Lastannahmen · Manuelle Stufenmaße
@@ -342,7 +336,7 @@
                 <div style="margin-top: 12px; text-align: center;">
                     <img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_37x23.jpg" 
                          alt="PayPal Logo" 
-                         style="height: 23px; width: auto; border: 0;">
+                         style="height: 35px; width: auto; border: 0;">
                 </div>
             </div>
             
@@ -357,6 +351,12 @@
         </div>
     </div>
 </div>
+
+<!-- Floating Darkmode Toggle -->
+<div id="themeToggleFloat" class="theme-toggle-float" title="Hell-/Dunkelmodus">
+    <span id="themeIconFloat">🌙</span>
+</div>
+
 <!-- JavaScript mit Versionsparameter -->
 <script type="module" src="js/main.js?v=20260420" defer></script>
 </body>

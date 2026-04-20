@@ -70,9 +70,9 @@ const befestigungStatus = document.getElementById('befestigungStatus');
 const materialListeContainer = document.getElementById('materialListeContainer');
 const printViewBtn = document.getElementById('printViewBtn');
 
-const themeToggle = document.getElementById('themeToggle');
-const themeIcon = document.getElementById('themeIcon');
-const themeText = document.getElementById('themeText');
+// Floating Theme Toggle
+const themeToggleFloat = document.getElementById('themeToggleFloat');
+const themeIconFloat = document.getElementById('themeIconFloat');
 
 // === State ===
 let manuellerModus = false;
@@ -80,15 +80,13 @@ let manuellerModus = false;
 // === Darkmode initialisieren ===
 const currentTheme = initTheme();
 const updateThemeUI = () => {
-    updateToggleIcon(
-        document.documentElement.getAttribute('data-theme') || 'light',
-        themeIcon,
-        themeText
-    );
+    const theme = document.documentElement.getAttribute('data-theme') || 'light';
+    themeIconFloat.textContent = theme === 'dark' ? '☀️' : '🌙';
+    themeToggleFloat.setAttribute('title', theme === 'dark' ? 'Zum hellen Modus wechseln' : 'Zum dunklen Modus wechseln');
 };
 updateThemeUI();
 
-themeToggle.addEventListener('click', () => {
+themeToggleFloat.addEventListener('click', () => {
     const newTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', newTheme);
     localStorage.setItem('theme', newTheme);
@@ -254,7 +252,7 @@ function renderAll() {
     // Canvas zeichnen
     drawCanvas(p, type, podest, ctx, 500, 280);
     
-    // === NEU: BOM generieren (vollständig) ===
+    // === Materialliste generieren ===
     const material = MATERIAL_DB[materialKey] || MATERIAL_DB.eiche;
     const bom = generateBOM(p, type, podest, breite, materialKey, befestigung, dicke);
     const positionen = bom.positionen;
@@ -275,7 +273,7 @@ function renderAll() {
     tableHtml += `</tbody></table>`;
     materialListeContainer.innerHTML = tableHtml;
     
-    // === Daten für Druckansicht speichern (jetzt mit BOM-Details) ===
+    // === Daten für Druckansicht speichern ===
     const druckDaten = {
         height: height,
         laufLength: berechneteLauflaenge,
@@ -286,10 +284,11 @@ function renderAll() {
         breite: breite,
         materialName: material.name,
         positionen: positionen,
-        bomDetails: bomDetails          // <-- NEU: detaillierte BOM
+        bomDetails: bomDetails
     };
     localStorage.setItem('treppeData', JSON.stringify(druckDaten));
 }
+
 // === Manuelle Modus-Steuerung ===
 function activateManualMode() {
     manuellerModus = true;
