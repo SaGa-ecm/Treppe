@@ -549,10 +549,10 @@
                     
                     <!-- Lastannahmen -->
                     <li style="display:flex; gap:12px;" class="has-tooltip">
-                        <span>⚖️ <strong>Lastannahmen:</strong></span>
-                        <span id="lastAngaben">3,0 kN/m² · 2,0 kN</span>
-                        <span class="tooltip-text">Flächenlast (kN/m²) und Einzellast pro Stufe (kN).<br>Gemäß DIN EN 1991-1-1 (Eurocode 1).</span>
-                    </li>
+		 <span>⚖️ <strong>Lastannahmen:</strong></span>
+		<span id="lastAngaben">3,0 kN/m² · 2,0 kN <span style="font-weight:400; opacity:0.8;">(≈300 kg/m², 200 kg)</span></span>
+		<span class="tooltip-text">Flächenlast (kN/m²) und Einzellast pro Stufe (kN).<br>Gemäß DIN EN 1991-1-1 (Eurocode 1).<br>1 kN ≈ 100 kg.</span>
+		</li>
                 </ul>
                 
                 <!-- Haftungshinweis -->
@@ -567,10 +567,10 @@
             
             <!-- Spendenbutton -->
             <div class="donate-section">
-                <a href="https://paypal.me/speeduino" target="_blank" rel="noopener" class="donate-btn">
-                    <span>❤️</span> Spenden via PayPal.me/speeduino
-                </a>
-            </div>
+    <a href="https://paypal.me/speeduino" target="_blank" rel="noopener" class="donate-btn" style="padding: 8px 16px;">
+        <img src="https://www.paypalobjects.com/webstatic/de_DE/i/buttons/btn_donate_LG.gif" alt="Spenden mit PayPal" style="height: 40px; border:0;">
+    </a>
+</div>
             
             <div class="footnote">
                 ⚡ Live‑Berechnung · Ampelsystem · Laufbreite & Statik
@@ -783,7 +783,9 @@
             
             breitenStatus.textContent = breiteOk ? `konform (≥${mindestbreite} cm)` : `zu schmal (<${mindestbreite} cm)`;
             breitenStatus.style.color = breiteOk ? '#2e7d32' : '#b55a2b';
-            lastAngaben.textContent = `${lasten.flaeche.toFixed(1)} kN/m² · ${lasten.einzel.toFixed(1)} kN`;
+            const flaecheKg = (lasten.flaeche * 100).toFixed(0);
+const einzelKg = (lasten.einzel * 100).toFixed(0);
+lastAngaben.innerHTML = `${lasten.flaeche.toFixed(1)} kN/m² · ${lasten.einzel.toFixed(1)} kN <span style="font-weight:400; opacity:0.8;">(≈${flaecheKg} kg/m², ${einzelKg} kg)</span>`;
             
             // Gesamtvalidität (Geometrie + Breite)
             const geometrieOk = p.valid;
