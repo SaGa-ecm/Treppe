@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>Treppenplaner · kostenlose Tool - spendenbasiert</title>
+    <title>Treppenplaner · kostenlos - spendenbasiert</title>
     <style>
         /* === CSS-Variablen für Light- & Darkmode === */
         :root {
@@ -144,6 +144,7 @@
             margin: 10px 0 4px;
             -webkit-appearance: none;
             background: transparent;
+            touch-action: none;
         }
         input[type=range]::-webkit-slider-runnable-track {
             height: 8px;
@@ -383,6 +384,16 @@
             background: var(--badge-bg);
             border-radius: 20px;
         }
+        input[type=number] {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border-medium);
+            background: var(--stat-bg);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            margin-top: 6px;
+        }
     </style>
 </head>
 <body>
@@ -414,6 +425,7 @@
                     <span class="value-badge" id="heightDisplay">200 cm</span>
                 </label>
                 <input type="range" id="heightSlider" min="160" max="350" value="200" step="1">
+                <input type="number" id="heightInput" min="160" max="350" value="200" step="0.01">
                 <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-secondary);">
                     <span>160 cm</span>
                     <span>350 cm</span>
@@ -428,6 +440,7 @@
                     <span class="value-badge" id="distanceDisplay">100 cm</span>
                 </label>
                 <input type="range" id="distanceSlider" min="80" max="600" value="100" step="5">
+                <input type="number" id="distanceInput" min="80" max="600" value="100" step="0.01">
                 <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-secondary);">
                     <span>80 cm</span>
                     <span>600 cm</span>
@@ -457,6 +470,7 @@
                     <span class="value-badge" id="podestDisplay">100 cm</span>
                 </label>
                 <input type="range" id="podestSlider" min="80" max="150" value="100" step="5">
+                <input type="number" id="podestInput" min="80" max="150" value="100" step="0.01">
             </div>
 
             <!-- Nutzbare Laufbreite -->
@@ -468,6 +482,7 @@
                     <span class="value-badge" id="breiteDisplay">100 cm</span>
                 </label>
                 <input type="range" id="breiteSlider" min="15" max="200" value="100" step="5">
+                <input type="number" id="breiteInput" min="15" max="200" value="100" step="0.01">
                 <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-secondary);">
                     <span>15 cm</span>
                     <span>200 cm</span>
@@ -496,6 +511,7 @@
                     <span class="value-badge" id="nutzlastDisplay">300 kg/m²</span>
                 </label>
                 <input type="range" id="nutzlastSlider" min="40" max="1000" value="300" step="10">
+                <input type="number" id="nutzlastInput" min="40" max="1000" value="300" step="0.01">
                 <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-secondary);">
                     <span>40 kg/m²</span>
                     <span>1000 kg/m²</span>
@@ -514,6 +530,7 @@
                         <span class="value-badge" id="auftrittDisplay">29.0 cm</span>
                     </label>
                     <input type="range" id="auftrittSlider" min="10" max="50" value="29" step="0.5" class="inactive-slider">
+                    <input type="number" id="auftrittInput" min="10" max="50" value="29" step="0.01" class="inactive-slider">
                 </div>
                 
                 <div class="slider-group">
@@ -524,6 +541,7 @@
                         <span class="value-badge" id="steigungDisplay">17.0 cm</span>
                     </label>
                     <input type="range" id="steigungSlider" min="10" max="25" value="17" step="0.5" class="inactive-slider">
+                    <input type="number" id="steigungInput" min="10" max="25" value="17" step="0.01" class="inactive-slider">
                 </div>
                 
                 <div class="slider-group">
@@ -534,6 +552,7 @@
                         <span class="value-badge" id="dickeDisplay">50 mm</span>
                     </label>
                     <input type="range" id="dickeSlider" min="5" max="100" value="50" step="5">
+                    <input type="number" id="dickeInput" min="5" max="100" value="50" step="0.01">
                 </div>
                 
                 <button id="resetAutoBtn" class="reset-btn">↺ Zurück zur automatischen Berechnung</button>
@@ -627,11 +646,22 @@
                 </p>
             </div>
             
-            <!-- Spendenbutton -->
+            <!-- Spendenformular -->
             <div class="donate-section">
-                <a href="https://paypal.me/speeduino" target="_blank" rel="noopener" class="donate-btn" style="padding: 8px 16px; background: transparent; border: none;">
-                    <img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" alt="Spenden mit PayPal" style="height: 40px; border:0;">
-                </a>
+                <form action="https://www.paypal.com/donate" method="post" target="_blank">
+                    <input type="hidden" name="cmd" value="_donations">
+                    <input type="hidden" name="business" value="speeduino">
+                    <input type="hidden" name="currency_code" value="EUR">
+                    <div style="margin-bottom:8px;">
+                        <input type="number" name="amount" min="1" step="0.01" placeholder="Betrag (EUR)" style="padding:8px; border-radius:20px; border:1px solid var(--border-medium); width:100%; background:var(--stat-bg); color:var(--text-primary);">
+                    </div>
+                    <div style="margin-bottom:8px;">
+                        <input type="text" name="item_name" placeholder="Verwendungszweck (optional)" style="padding:8px; border-radius:20px; border:1px solid var(--border-medium); width:100%; background:var(--stat-bg); color:var(--text-primary);">
+                    </div>
+                    <button type="submit" style="background:var(--accent); color:white; border:none; border-radius:60px; padding:12px; font-weight:600; width:100%; cursor:pointer;">
+                        💰 Jetzt spenden via PayPal
+                    </button>
+                </form>
             </div>
             
             <div class="footnote">
@@ -646,8 +676,11 @@
 
         // DOM Elemente
         const heightSlider = document.getElementById('heightSlider');
+        const heightInput = document.getElementById('heightInput');
         const distanceSlider = document.getElementById('distanceSlider');
+        const distanceInput = document.getElementById('distanceInput');
         const podestSlider = document.getElementById('podestSlider');
+        const podestInput = document.getElementById('podestInput');
         const typeSelect = document.getElementById('stairTypeSelect');
         const podestGroup = document.getElementById('podestGroup');
         const heightDisplay = document.getElementById('heightDisplay');
@@ -672,17 +705,22 @@
         
         // Weitere Elemente
         const breiteSlider = document.getElementById('breiteSlider');
+        const breiteInput = document.getElementById('breiteInput');
         const gebaeudeSelect = document.getElementById('gebaeudeSelect');
         const breiteDisplay = document.getElementById('breiteDisplay');
         const breitenStatus = document.getElementById('breitenStatus');
         const lastAngaben = document.getElementById('lastAngaben');
         const nutzlastSlider = document.getElementById('nutzlastSlider');
+        const nutzlastInput = document.getElementById('nutzlastInput');
         const nutzlastDisplay = document.getElementById('nutzlastDisplay');
         
         // Manuelle Stufen
         const auftrittSlider = document.getElementById('auftrittSlider');
+        const auftrittInput = document.getElementById('auftrittInput');
         const steigungSlider = document.getElementById('steigungSlider');
+        const steigungInput = document.getElementById('steigungInput');
         const dickeSlider = document.getElementById('dickeSlider');
+        const dickeInput = document.getElementById('dickeInput');
         const auftrittDisplay = document.getElementById('auftrittDisplay');
         const steigungDisplay = document.getElementById('steigungDisplay');
         const dickeDisplay = document.getElementById('dickeDisplay');
@@ -740,6 +778,26 @@
         }
         function getMindestlast(gebaeudeTyp) {
             return gebaeudeTyp === 'wohn' ? 300 : 500;
+        }
+
+        // Synchronisation Slider <-> Number Input
+        function syncSliderInput(slider, input, display, unit, callback) {
+            function updateFromSlider() {
+                input.value = slider.value;
+                display.textContent = slider.value + ' ' + unit;
+                if (callback) callback();
+            }
+            function updateFromInput() {
+                let val = parseFloat(input.value);
+                if (isNaN(val)) return;
+                val = Math.min(slider.max, Math.max(slider.min, val));
+                slider.value = val;
+                input.value = val;
+                display.textContent = val + ' ' + unit;
+                if (callback) callback();
+            }
+            slider.addEventListener('input', updateFromSlider);
+            input.addEventListener('change', updateFromInput);
         }
 
         // Automatische Berechnung
@@ -867,13 +925,17 @@
             } else {
                 p = calculateAuto(height, distance, type, podest);
                 steigungSlider.value = p.rise;
+                steigungInput.value = p.rise;
                 auftrittSlider.value = p.run;
+                auftrittInput.value = p.run;
                 steigungDisplay.textContent = p.rise.toFixed(1) + ' cm';
                 auftrittDisplay.textContent = p.run.toFixed(1) + ' cm';
             }
             
             auftrittSlider.classList.toggle('inactive-slider', !manuellerModus);
+            auftrittInput.classList.toggle('inactive-slider', !manuellerModus);
             steigungSlider.classList.toggle('inactive-slider', !manuellerModus);
+            steigungInput.classList.toggle('inactive-slider', !manuellerModus);
             
             stepsCount.textContent = p.steps;
             riseValue.textContent = p.rise.toFixed(1);
@@ -1060,24 +1122,31 @@
             renderAll();
         }
 
-        // Event Listener
-        heightSlider.addEventListener('input', renderAll);
-        distanceSlider.addEventListener('input', renderAll);
+        // === Synchronisation für alle Slider ===
+        syncSliderInput(heightSlider, heightInput, heightDisplay, 'cm', renderAll);
+        syncSliderInput(distanceSlider, distanceInput, distanceDisplay, 'cm', renderAll);
+        syncSliderInput(podestSlider, podestInput, podestDisplay, 'cm', renderAll);
+        syncSliderInput(breiteSlider, breiteInput, breiteDisplay, 'cm', renderAll);
+        syncSliderInput(nutzlastSlider, nutzlastInput, nutzlastDisplay, 'kg/m²', renderAll);
+        syncSliderInput(auftrittSlider, auftrittInput, auftrittDisplay, 'cm', function() {
+            if (!manuellerModus) activateManualMode();
+            else renderAll();
+        });
+        syncSliderInput(steigungSlider, steigungInput, steigungDisplay, 'cm', function() {
+            if (!manuellerModus) activateManualMode();
+            else renderAll();
+        });
+        syncSliderInput(dickeSlider, dickeInput, dickeDisplay, 'mm', renderAll);
+
+        // Event Listener für Dropdowns und Buttons
         typeSelect.addEventListener('change', renderAll);
-        podestSlider.addEventListener('input', renderAll);
-        breiteSlider.addEventListener('input', renderAll);
         gebaeudeSelect.addEventListener('change', renderAll);
-        nutzlastSlider.addEventListener('input', renderAll);
-        
-        auftrittSlider.addEventListener('input', activateManualMode);
-        steigungSlider.addEventListener('input', activateManualMode);
-        dickeSlider.addEventListener('input', renderAll);
-        
         resetAutoBtn.addEventListener('click', resetToAuto);
         
         applyBtn.onclick = () => {
             const h = parseFloat(heightSlider.value);
             distanceSlider.value = Math.round(computeIdealLength(h));
+            distanceInput.value = distanceSlider.value;
             if (manuellerModus) {
                 manuellerModus = false;
             }
