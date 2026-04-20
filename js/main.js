@@ -1,10 +1,11 @@
-// === Hauptanwendung – Einstiegspunkt ===
+// === Hauptanwendung – Einstiegspunkt (v2.0 mit High-DPI & PDF) ===
 import { syncSliderInput, initTheme, updateToggleIcon, getMindestbreite, getLasten, getMindestlast } from './ui.js';
 import { 
     calculateAuto, calculateManual, computeIdealLength, 
     validateBefestigung, computeWangenLaenge, generateBOM, generateMaterialListe 
 } from './calculator.js';
-import { drawCanvas } from './drawing.js';
+import { drawCanvas } from './drawing.js'; // Achtung: Signatur geändert!
+import { generatePDF } from './pdf-export.js'; // Neu: PDF Export
 import { 
     EMPFOHLENE_DICKE, MATERIAL_DB,
     MIN_SCHRITTMASS, MAX_SCHRITTMASS, MAX_RISE, MIN_RUN,
@@ -37,7 +38,8 @@ const adviceText = document.getElementById('adviceText');
 const visuTitle = document.getElementById('visuTitle');
 const stepDetailHint = document.getElementById('stepDetailHint');
 const canvas = document.getElementById('stairCanvas');
-const ctx = canvas.getContext('2d');
+// Kontext wird jetzt direkt in drawCanvas geholt, aber wir behalten die Ref falls nötig
+// const ctx = canvas.getContext('2d'); 
 const applyBtn = document.getElementById('applyRecommendedBtn');
 
 const breiteSlider = document.getElementById('breiteSlider');
@@ -69,6 +71,11 @@ const wangenLaengeSpan = document.getElementById('wangenLaenge');
 const befestigungStatus = document.getElementById('befestigungStatus');
 const materialListeContainer = document.getElementById('materialListeContainer');
 const printViewBtn = document.getElementById('printViewBtn');
+const pdfExportBtn = document.getElementById('pdfExportBtn'); // Neu
+
+// Neue Inputs für PDF
+const userNameInput = document.getElementById('userNameInput');
+const stairNameInput = document.getElementById('stairNameInput');
 
 // Floating Theme Toggle
 const themeToggleFloat = document.getElementById('themeToggleFloat');
@@ -76,6 +83,7 @@ const themeIconFloat = document.getElementById('themeIconFloat');
 
 // === State ===
 let manuellerModus = false;
+let currentCalculationData = null; // Speichert aktuelle Daten für PDF Export
 
 // === Darkmode initialisieren ===
 const currentTheme = initTheme();
@@ -101,192 +109,206 @@ function getMinDickeFromMaterial(materialKey) {
 
 // === Rendern der gesamten UI ===
 function renderAll() {
-    const height = parseFloat(heightSlider.value);
-    const distance = parseFloat(distanceSlider.value);
-    const type = typeSelect.value;
-    const podest = parseFloat(podestSlider.value);
-    const breite = parseFloat(breiteSlider.value);
-    const gebaeude = gebaeudeSelect.value;
-    const nutzlast = parseFloat(nutzlastSlider.value);
-    const dicke = parseFloat(dickeSlider.value);
-    const materialKey = materialSelect.value;
-    const befestigung = befestigungSelect.value;
-    
-    // Basis-Displays aktualisieren
-    heightDisplay.textContent = height + ' cm';
-    distanceDisplay.textContent = distance + ' cm';
-    podestDisplay.textContent = podest + ' cm';
-    breiteDisplay.textContent = breite + ' cm';
-    nutzlastDisplay.textContent = nutzlast + ' kg/m²';
-    dickeDisplay.textContent = dicke + ' mm';
-    podestGroup.style.display = (type === 'podest') ? 'block' : 'none';
-    
-    // === Berechnung (Auto / Manuell) ===
-    let p;
-    if (manuellerModus) {
-        const manSteigung = parseFloat(steigungSlider.value);
-        const manAuftritt = parseFloat(auftrittSlider.value);
-        steigungDisplay.textContent = manSteigung.toFixed(1) + ' cm';
-        auftrittDisplay.textContent = manAuftritt.toFixed(1) + ' cm';
-        p = calculateManual(height, manSteigung, manAuftritt, type, podest);
-    } else {
-        p = calculateAuto(height, distance, type, podest, materialKey);
-        steigungSlider.value = p.rise;
-        steigungInput.value = p.rise;
-        auftrittSlider.value = p.run;
-        auftrittInput.value = p.run;
-        steigungDisplay.textContent = p.rise.toFixed(1) + ' cm';
-        auftrittDisplay.textContent = p.run.toFixed(1) + ' cm';
+    try {
+        const height = parseFloat(heightSlider.value);
+        const distance = parseFloat(distanceSlider.value);
+        const type = typeSelect.value;
+        const podest = parseFloat(podestSlider.value);
+        const breite = parseFloat(breiteSlider.value);
+        const gebaeude = gebaeudeSelect.value;
+        const nutzlast = parseFloat(nutzlastSlider.value);
+        const dicke = parseFloat(dickeSlider.value);
+        const materialKey = materialSelect.value;
+        const befestigung = befestigungSelect.value;
+        
+        // Basis-Displays aktualisieren
+        heightDisplay.textContent = height + ' cm';
+        distanceDisplay.textContent = distance + ' cm';
+        podestDisplay.textContent = podest + ' cm';
+        breiteDisplay.textContent = breite + ' cm';
+        nutzlastDisplay.textContent = nutzlast + ' kg/m²';
+        dickeDisplay.textContent = dicke + ' mm';
+        podestGroup.style.display = (type === 'podest') ? 'block' : 'none';
+        
+        // === Berechnung (Auto / Manuell) ===
+        let p;
+        if (manuellerModus) {
+            const manSteigung = parseFloat(steigungSlider.value);
+            const manAuftritt = parseFloat(auftrittSlider.value);
+            steigungDisplay.textContent = manSteigung.toFixed(1) + ' cm';
+            auftrittDisplay.textContent = manAuftritt.toFixed(1) + ' cm';
+            p = calculateManual(height, manSteigung, manAuftritt, type, podest);
+        } else {
+            p = calculateAuto(height, distance, type, podest, materialKey);
+            steigungSlider.value = p.rise;
+            steigungInput.value = p.rise;
+            auftrittSlider.value = p.run;
+            auftrittInput.value = p.run;
+            steigungDisplay.textContent = p.rise.toFixed(1) + ' cm';
+            auftrittDisplay.textContent = p.run.toFixed(1) + ' cm';
+        }
+        
+        // Manuelle Slider aktiv/inaktiv schalten
+        auftrittSlider.classList.toggle('inactive-slider', !manuellerModus);
+        auftrittInput.classList.toggle('inactive-slider', !manuellerModus);
+        steigungSlider.classList.toggle('inactive-slider', !manuellerModus);
+        steigungInput.classList.toggle('inactive-slider', !manuellerModus);
+        
+        // === Statistiken füllen ===
+        stepsCount.textContent = p.steps;
+        riseValue.textContent = p.rise.toFixed(1);
+        runValue.textContent = p.run.toFixed(1);
+        angleValue.textContent = p.angle.toFixed(1);
+        schrittmassSpan.textContent = p.schrittmass.toFixed(1) + ' cm';
+        
+        const berechneteLauflaenge = p.laufLength;
+        laufLengthDisplay.textContent = berechneteLauflaenge.toFixed(0) + ' cm';
+        const passtInPlatz = berechneteLauflaenge <= distance;
+        
+        // === Wangenlänge berechnen ===
+        const wangenLaenge = computeWangenLaenge(height, berechneteLauflaenge);
+        wangenLaengeSpan.textContent = `${wangenLaenge.toFixed(0)} cm (≈ ${(wangenLaenge/100).toFixed(2)} m)`;
+        
+        // === Prüfungen ===
+        const mindestbreite = getMindestbreite(gebaeude);
+        const breiteOk = breite >= mindestbreite;
+        breitenStatus.textContent = breiteOk ? `konform (≥${mindestbreite} cm)` : `zu schmal (<${mindestbreite} cm)`;
+        breitenStatus.style.color = breiteOk ? '#2e7d32' : '#b55a2b';
+        
+        const lasten = getLasten(gebaeude);
+        const flaecheKg = (lasten.flaeche * 100).toFixed(0);
+        const einzelKg = (lasten.einzel * 100).toFixed(0);
+        lastAngaben.innerHTML = `${lasten.flaeche.toFixed(1)} kN/m² · ${lasten.einzel.toFixed(1)} kN <span style="font-weight:400; opacity:0.8;">(≈${flaecheKg} kg/m², ${einzelKg} kg)</span>`;
+        
+        const mindestlast = getMindestlast(gebaeude);
+        const lastOk = nutzlast >= mindestlast;
+        
+        const minDickeMaterial = getMinDickeFromMaterial(materialKey);
+        const dickeOk = dicke >= minDickeMaterial;
+        dickenStatus.textContent = dickeOk ? `${dicke} mm (≥${minDickeMaterial} mm für ${MATERIAL_DB[materialKey].name})` : `${dicke} mm (zu dünn, empfohlen ≥${minDickeMaterial} mm)`;
+        dickenStatus.style.color = dickeOk ? '#2e7d32' : '#b55a2b';
+        
+        // Befestigungsprüfung
+        const befValid = validateBefestigung(befestigung, breite, p.podestUsed, berechneteLauflaenge);
+        befestigungStatus.textContent = befValid.message;
+        befestigungStatus.style.color = befValid.ok ? '#2e7d32' : '#b55a2b';
+        
+        const geometrieOk = p.valid;
+        const gesamtValid = geometrieOk && breiteOk && lastOk && dickeOk && passtInPlatz;
+        
+        normTag.textContent = gesamtValid ? (p.isAttic ? '✅ Raumspar' : '✅ DIN') : '⚠️ außerhalb Norm';
+        normTag.style.background = gesamtValid ? '#3c6e4a' : '#b55a2b';
+        statusMessageDiv.className = gesamtValid ? 'norm-status' : 'norm-status warning-box';
+        
+        // Status-Text
+        if (p.isAttic) {
+            statusText.textContent = gesamtValid ? 'Raumspartreppe · nur für gelegentliche Nutzung' : 'Raumspartreppe außerhalb empfohlener Grenzen';
+        } else {
+            if (!geometrieOk) statusText.textContent = 'Geometrie nicht normgerecht';
+            else if (!breiteOk) statusText.textContent = 'Laufbreite zu gering';
+            else if (!lastOk) statusText.textContent = 'Nutzlast unterschreitet Mindestwert';
+            else if (!dickeOk) statusText.textContent = 'Stufendicke zu gering';
+            else if (!passtInPlatz) statusText.textContent = 'Treppe zu lang für verfügbaren Platz';
+            else statusText.textContent = 'DIN‑konform · bequeme Treppe';
+        }
+        
+        // Hinweistext
+        let advice = '';
+        if (!geometrieOk) {
+            if (p.run < (p.isAttic ? ATTIC_MIN_RUN : MIN_RUN)) advice = 'Auftritt zu schmal.';
+            else if (p.rise > (p.isAttic ? ATTIC_MAX_RISE : MAX_RISE)) advice = 'Steigung zu hoch.';
+            else if (!p.isAttic && (p.schrittmass < MIN_SCHRITTMASS || p.schrittmass > MAX_SCHRITTMASS)) advice = 'Schrittmaß außerhalb 59–65 cm.';
+            else advice = 'Grenzwerte überschritten.';
+        } else if (!breiteOk) {
+            advice = `Laufbreite zu gering (mind. ${mindestbreite} cm).`;
+        } else if (!lastOk) {
+            advice = `Nutzlast (${nutzlast} kg/m²) unter Minimum (${mindestlast} kg/m²).`;
+        } else if (!dickeOk) {
+            advice = `Stufendicke (${dicke} mm) unter Empfehlung (${minDickeMaterial} mm für ${MATERIAL_DB[materialKey].name}).`;
+        } else if (!passtInPlatz) {
+            advice = `Treppe ist ${(berechneteLauflaenge - distance).toFixed(1)} cm zu lang.`;
+        } else {
+            advice = p.isAttic ? 'Raumspartreppe – keine notwendige Treppe.' : 'Alle Werte normgerecht.';
+        }
+        if (type === 'viertel' || type === 'halb') advice += ' Wendelung berücksichtigt.';
+        if (p.podestUsed) advice += ' Podesttiefe ' + podest + ' cm.';
+        if (!befValid.ok) advice += ' ⚠️ ' + befValid.message;
+        adviceText.textContent = '📌 ' + advice;
+        
+        // Stufendetails-Liste
+        const n = p.steps;
+        const rise = p.rise;
+        const run = p.run;
+        let listHtml = '';
+        for (let i = 1; i <= n; i++) {
+            const hoehe = (i * rise).toFixed(1);
+            let auftrittInfo = (i < n) ? `Auftritt ${run.toFixed(1)} cm` : 'Austritt';
+            if (p.podestUsed && i === 1) auftrittInfo = `Podest ${podest} cm`;
+            listHtml += `<div class="step-row"><span>Stufe ${i}</span><span>${hoehe} cm</span><span style="color:var(--text-secondary);">${auftrittInfo}</span></div>`;
+        }
+        stepListContainer.innerHTML = listHtml;
+        stepDetailHint.textContent = `Auftritt ${run.toFixed(1)} cm`;
+        
+        // Titel für Visualisierung
+        let title = 'Ansicht · ';
+        if (type === 'gerade') title += 'gerade Treppe';
+        else if (type === 'viertel') title += 'viertelgewendelt (Draufsicht)';
+        else if (type === 'halb') title += 'halbgewendelt (Draufsicht)';
+        else if (type === 'podest') title += 'Podesttreppe';
+        else title += 'Dachbodentreppe (steil)';
+        visuTitle.textContent = title;
+        
+        // === Canvas zeichnen (HIGH-DPI UPDATE) ===
+        // Wir übergeben das Canvas-Element und die Zielgröße in CSS-Pixeln.
+        // Die Funktion drawCanvas berechnet intern devicePixelRatio.
+        // Da das Canvas per CSS auf max-width: 500px gesetzt ist, nutzen wir das oder eine feste Referenz.
+        const cssWidth = 500; 
+        const cssHeight = 280;
+        drawCanvas(p, type, podest, canvas, cssWidth, cssHeight);
+        
+        // === Materialliste generieren ===
+        const material = MATERIAL_DB[materialKey] || MATERIAL_DB.eiche;
+        const bom = generateBOM(p, type, podest, breite, materialKey, befestigung, dicke);
+        const positionen = bom.positionen;
+        const bomDetails = bom.bomDetails;
+        
+        // UI: Materialliste (Übersicht) rendern
+        let tableHtml = `<table class="material-table">
+            <thead><tr><th>Position</th><th>Menge</th><th>Material</th><th>Maße (L×B×D)</th><th>Hinweis</th></tr></thead><tbody>`;
+        positionen.forEach(item => {
+            tableHtml += `<tr>
+                <td>${item.pos}</td>
+                <td class="amount">${item.menge}</td>
+                <td>${item.material}</td>
+                <td>${item.laenge} × ${item.breite} × ${item.dicke}</td>
+                <td>${item.hinweis}</td>
+            </tr>`;
+        });
+        tableHtml += `</tbody></table>`;
+        materialListeContainer.innerHTML = tableHtml;
+        
+        // === Daten für PDF Export und Druckansicht speichern ===
+        currentCalculationData = {
+            height: height,
+            laufLength: berechneteLauflaenge,
+            rise: p.rise.toFixed(1),
+            run: p.run.toFixed(1),
+            steps: p.steps,
+            angle: p.angle.toFixed(1),
+            breite: breite,
+            materialName: material.name,
+            positionen: positionen,
+            bomDetails: bomDetails
+        };
+        
+        // Auch im LocalStorage halten (für Druckansicht Fenster)
+        localStorage.setItem('treppeData', JSON.stringify(currentCalculationData));
+        
+    } catch (error) {
+        console.error("Fehler beim Rendern:", error);
+        statusText.textContent = "Interner Fehler beim Berechnen.";
+        statusMessageDiv.className = "norm-status warning-box";
     }
-    
-    // Manuelle Slider aktiv/inaktiv schalten
-    auftrittSlider.classList.toggle('inactive-slider', !manuellerModus);
-    auftrittInput.classList.toggle('inactive-slider', !manuellerModus);
-    steigungSlider.classList.toggle('inactive-slider', !manuellerModus);
-    steigungInput.classList.toggle('inactive-slider', !manuellerModus);
-    
-    // === Statistiken füllen ===
-    stepsCount.textContent = p.steps;
-    riseValue.textContent = p.rise.toFixed(1);
-    runValue.textContent = p.run.toFixed(1);
-    angleValue.textContent = p.angle.toFixed(1);
-    schrittmassSpan.textContent = p.schrittmass.toFixed(1) + ' cm';
-    
-    const berechneteLauflaenge = p.laufLength;
-    laufLengthDisplay.textContent = berechneteLauflaenge.toFixed(0) + ' cm';
-    const passtInPlatz = berechneteLauflaenge <= distance;
-    
-    // === Wangenlänge berechnen ===
-    const wangenLaenge = computeWangenLaenge(height, berechneteLauflaenge);
-    wangenLaengeSpan.textContent = `${wangenLaenge.toFixed(0)} cm (≈ ${(wangenLaenge/100).toFixed(2)} m)`;
-    
-    // === Prüfungen ===
-    const mindestbreite = getMindestbreite(gebaeude);
-    const breiteOk = breite >= mindestbreite;
-    breitenStatus.textContent = breiteOk ? `konform (≥${mindestbreite} cm)` : `zu schmal (<${mindestbreite} cm)`;
-    breitenStatus.style.color = breiteOk ? '#2e7d32' : '#b55a2b';
-    
-    const lasten = getLasten(gebaeude);
-    const flaecheKg = (lasten.flaeche * 100).toFixed(0);
-    const einzelKg = (lasten.einzel * 100).toFixed(0);
-    lastAngaben.innerHTML = `${lasten.flaeche.toFixed(1)} kN/m² · ${lasten.einzel.toFixed(1)} kN <span style="font-weight:400; opacity:0.8;">(≈${flaecheKg} kg/m², ${einzelKg} kg)</span>`;
-    
-    const mindestlast = getMindestlast(gebaeude);
-    const lastOk = nutzlast >= mindestlast;
-    
-    const minDickeMaterial = getMinDickeFromMaterial(materialKey);
-    const dickeOk = dicke >= minDickeMaterial;
-    dickenStatus.textContent = dickeOk ? `${dicke} mm (≥${minDickeMaterial} mm für ${MATERIAL_DB[materialKey].name})` : `${dicke} mm (zu dünn, empfohlen ≥${minDickeMaterial} mm)`;
-    dickenStatus.style.color = dickeOk ? '#2e7d32' : '#b55a2b';
-    
-    // Befestigungsprüfung
-    const befValid = validateBefestigung(befestigung, breite, p.podestUsed, berechneteLauflaenge);
-    befestigungStatus.textContent = befValid.message;
-    befestigungStatus.style.color = befValid.ok ? '#2e7d32' : '#b55a2b';
-    
-    const geometrieOk = p.valid;
-    const gesamtValid = geometrieOk && breiteOk && lastOk && dickeOk && passtInPlatz;
-    
-    normTag.textContent = gesamtValid ? (p.isAttic ? '✅ Raumspar' : '✅ DIN') : '⚠️ außerhalb Norm';
-    normTag.style.background = gesamtValid ? '#3c6e4a' : '#b55a2b';
-    statusMessageDiv.className = gesamtValid ? 'norm-status' : 'norm-status warning-box';
-    
-    // Status-Text
-    if (p.isAttic) {
-        statusText.textContent = gesamtValid ? 'Raumspartreppe · nur für gelegentliche Nutzung' : 'Raumspartreppe außerhalb empfohlener Grenzen';
-    } else {
-        if (!geometrieOk) statusText.textContent = 'Geometrie nicht normgerecht';
-        else if (!breiteOk) statusText.textContent = 'Laufbreite zu gering';
-        else if (!lastOk) statusText.textContent = 'Nutzlast unterschreitet Mindestwert';
-        else if (!dickeOk) statusText.textContent = 'Stufendicke zu gering';
-        else if (!passtInPlatz) statusText.textContent = 'Treppe zu lang für verfügbaren Platz';
-        else statusText.textContent = 'DIN‑konform · bequeme Treppe';
-    }
-    
-    // Hinweistext
-    let advice = '';
-    if (!geometrieOk) {
-        if (p.run < (p.isAttic ? ATTIC_MIN_RUN : MIN_RUN)) advice = 'Auftritt zu schmal.';
-        else if (p.rise > (p.isAttic ? ATTIC_MAX_RISE : MAX_RISE)) advice = 'Steigung zu hoch.';
-        else if (!p.isAttic && (p.schrittmass < MIN_SCHRITTMASS || p.schrittmass > MAX_SCHRITTMASS)) advice = 'Schrittmaß außerhalb 59–65 cm.';
-        else advice = 'Grenzwerte überschritten.';
-    } else if (!breiteOk) {
-        advice = `Laufbreite zu gering (mind. ${mindestbreite} cm).`;
-    } else if (!lastOk) {
-        advice = `Nutzlast (${nutzlast} kg/m²) unter Minimum (${mindestlast} kg/m²).`;
-    } else if (!dickeOk) {
-        advice = `Stufendicke (${dicke} mm) unter Empfehlung (${minDickeMaterial} mm für ${MATERIAL_DB[materialKey].name}).`;
-    } else if (!passtInPlatz) {
-        advice = `Treppe ist ${(berechneteLauflaenge - distance).toFixed(1)} cm zu lang.`;
-    } else {
-        advice = p.isAttic ? 'Raumspartreppe – keine notwendige Treppe.' : 'Alle Werte normgerecht.';
-    }
-    if (type === 'viertel' || type === 'halb') advice += ' Wendelung berücksichtigt.';
-    if (p.podestUsed) advice += ' Podesttiefe ' + podest + ' cm.';
-    if (!befValid.ok) advice += ' ⚠️ ' + befValid.message;
-    adviceText.textContent = '📌 ' + advice;
-    
-    // Stufendetails-Liste
-    const n = p.steps;
-    const rise = p.rise;
-    const run = p.run;
-    let listHtml = '';
-    for (let i = 1; i <= n; i++) {
-        const hoehe = (i * rise).toFixed(1);
-        let auftrittInfo = (i < n) ? `Auftritt ${run.toFixed(1)} cm` : 'Austritt';
-        if (p.podestUsed && i === 1) auftrittInfo = `Podest ${podest} cm`;
-        listHtml += `<div class="step-row"><span>Stufe ${i}</span><span>${hoehe} cm</span><span style="color:var(--text-secondary);">${auftrittInfo}</span></div>`;
-    }
-    stepListContainer.innerHTML = listHtml;
-    stepDetailHint.textContent = `Auftritt ${run.toFixed(1)} cm`;
-    
-    // Titel für Visualisierung
-    let title = 'Ansicht · ';
-    if (type === 'gerade') title += 'gerade Treppe';
-    else if (type === 'viertel') title += 'viertelgewendelt (Draufsicht)';
-    else if (type === 'halb') title += 'halbgewendelt (Draufsicht)';
-    else if (type === 'podest') title += 'Podesttreppe';
-    else title += 'Dachbodentreppe (steil)';
-    visuTitle.textContent = title;
-    
-    // Canvas zeichnen
-    drawCanvas(p, type, podest, ctx, 500, 280);
-    
-    // === Materialliste generieren ===
-    const material = MATERIAL_DB[materialKey] || MATERIAL_DB.eiche;
-    const bom = generateBOM(p, type, podest, breite, materialKey, befestigung, dicke);
-    const positionen = bom.positionen;
-    const bomDetails = bom.bomDetails;
-    
-    // UI: Materialliste (Übersicht) rendern
-    let tableHtml = `<table class="material-table">
-        <thead><tr><th>Position</th><th>Menge</th><th>Material</th><th>Maße (L×B×D)</th><th>Hinweis</th></tr></thead><tbody>`;
-    positionen.forEach(item => {
-        tableHtml += `<tr>
-            <td>${item.pos}</td>
-            <td class="amount">${item.menge}</td>
-            <td>${item.material}</td>
-            <td>${item.laenge} × ${item.breite} × ${item.dicke}</td>
-            <td>${item.hinweis}</td>
-        </tr>`;
-    });
-    tableHtml += `</tbody></table>`;
-    materialListeContainer.innerHTML = tableHtml;
-    
-    // === Daten für Druckansicht speichern ===
-    const druckDaten = {
-        height: height,
-        laufLength: berechneteLauflaenge,
-        rise: p.rise.toFixed(1),
-        run: p.run.toFixed(1),
-        steps: p.steps,
-        angle: p.angle.toFixed(1),
-        breite: breite,
-        materialName: material.name,
-        positionen: positionen,
-        bomDetails: bomDetails
-    };
-    localStorage.setItem('treppeData', JSON.stringify(druckDaten));
 }
 
 // === Manuelle Modus-Steuerung ===
@@ -340,5 +362,30 @@ if (printViewBtn) {
     });
 }
 
+// === PDF Export Funktion ===
+if (pdfExportBtn) {
+    pdfExportBtn.addEventListener('click', () => {
+        if (!currentCalculationData) {
+            alert("Bitte warten Sie, bis die Berechnung abgeschlossen ist.");
+            return;
+        }
+        
+        const userName = userNameInput ? userNameInput.value.trim() : '';
+        const stairName = stairNameInput ? stairNameInput.value.trim() : '';
+        
+        try {
+            generatePDF(currentCalculationData, userName, stairName);
+        } catch (e) {
+            console.error("PDF Generierung fehlgeschlagen:", e);
+            alert("Fehler beim Erstellen der PDF. Bitte prüfen Sie die Konsole und ob jsPDF geladen wurde.");
+        }
+    });
+}
+
 // === Initialer Render ===
-renderAll();
+// Kurze Verzögerung sicherzustellen, dass DOM vollständig da ist
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', renderAll);
+} else {
+    renderAll();
+}

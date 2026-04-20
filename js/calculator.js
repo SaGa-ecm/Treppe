@@ -7,13 +7,98 @@ import {
 } from './constants.js';
 
 /**
+ * Hilfsfunktion: Berechnet passende Verbindungsmittel basierend auf Material, Dicke und Last.
+ * @param {string} materialKey - Schlüssel aus MATERIAL_DB
+ * @param {number} stufenDickeMm - Stärke der Stufe in mm
+ * @param {string} befestigung - Art der Befestigung (wange, bolzen, kragarm)
+ * @param {number} breiteCm - Laufbreite zur Abschätzung der Lastverteilung
+ * @returns {object} Objekt mit Schrauben- und Befestigungsdetails
+ */
+function computeFastenerSpecs(materialKey, stufenDickeMm, befestigung, breiteCm) {
+    const material = MATERIAL_DB[materialKey] || MATERIAL_DB.eiche;
+    const isWood = material.category === 'holz' || ['eiche', 'buche', 'fichte', 'kiefer', 'leimholz'].includes(materialKey);
+    const isSteel = materialKey === 'stahl';
+    const isConcrete = materialKey === 'beton';
+
+    // Grundwerte für Holzverbindungen
+    let screwDiameter = 6; // mm
+    let screwLength = 80;  // mm
+    let screwsPerStep = 4;
+    let screwType = "Holzbauschraube";
+    let preDrill = true;
+
+    // Anpassung basierend auf Stufendicke (Eindringtiefe mind. 2/3 oder durchgehend bei dünnen Platten)
+    if (isWood) {
+        if (stufenDickeMm >= 40) {
+            screwLength = Math.max(80, stufenDickeMm + 20); // Eindringen in die Wange
+        } else {
+            screwLength = stufenDickeMm + 30; // Durchschrauben + Mutter/Unterlegscheibe simuliert
+        }
+        
+        // Bei sehr dicken Stufen (>60mm) größerer Durchmesser nötig
+        if (stufenDickeMm > 60) {
+            screwDiameter = 8;
+            screwLength = Math.max(100, stufenDickeMm + 30);
+        }
+    }
+
+    // Material-spezifische Overrides
+    if (isSteel) {
+        screwType = "Senkschraube DIN 7991";
+        screwDiameter = 8;
+        screwLength = Math.max(60, stufenDickeMm + 10); // Gewindeeingriff
+        screwsPerStep = 4;
+        preDrill = false; // Selbstschneidend oder vorgebohrt im Werk
+    } else if (isConcrete) {
+        screwType = "Betonankerschraube";
+        screwDiameter = 10;
+        screwLength = Math.max(100, stufenDickeMm + 60); // Verankerungstiefe
+        screwsPerStep = 2; // Weniger, aber stärkere Anker
+        preDrill = true;
+    }
+
+    // Befestigungsart-spezifische Anpassungen
+    let anchorType = "Nylondübel S10";
+    let anchorCount = 0;
+    let bracketCount = 0;
+    let specialHardware = [];
+
+    if (befestigung === 'bolzen') {
+        // Bolzentreppe: Spezielle Anker für Wandbefestigung
+        screwType = "Bolzenanker M12 A4";
+        screwDiameter = 12;
+        screwLength = 120; // Standardlänge für Wandanker
+        screwsPerStep = 1; // Pro Stufe ein zentraler Bolzen
+        anchorType = "Integriert im Bolzenanker";
+        anchorCount = 0;
+    } else if (befestigung === 'kragarm') {
+        // Kragarm: Keine Schrauben in der Stufe sichtbar, sondern Konsolen
+        screwType = "Passschraube M10 (verdeckt)";
+        screwDiameter = 10;
+        screwLength = 50;
+        screwsPerStep = 2;
+        specialHardware.push("Kragarmkonsole Stahl S355");
+    } else {
+        // Wangentreppe (Standard)
+        anchorCount = 8; // Für Wangenbefestigung oben/unten
+        bracketCount = 4; // Winkelverbinder
+    }
+
+    return {
+        screwType,
+        screwDiameter,
+        screwLength,
+        screwsPerStep,
+        preDrill,
+        anchorType,
+        anchorCount,
+        bracketCount,
+        specialHardware
+    };
+}
+
+/**
  * Automatische Berechnung der optimalen Stufenmaße.
- * @param {number} heightCm - Geschosshöhe in cm
- * @param {number} availRunCm - verfügbare horizontale Entfernung in cm
- * @param {string} type - Treppentyp (gerade, viertel, halb, podest, dachboden)
- * @param {number} podestCm - Podesttiefe in cm (nur bei podest)
- * @param {string} materialKey - Schlüssel für MATERIAL_DB
- * @returns {object} Berechnungsergebnis (steps, rise, run, schrittmass, laufLength, angle, valid, comfort, ...)
  */
 export function calculateAuto(heightCm, availRunCm, type, podestCm, materialKey) {
     const isAttic = (type === 'dachboden');
@@ -160,7 +245,7 @@ export function validateBefestigung(befestigung, breite, podestUsed, laufLength)
                 ok = false;
                 message = 'Kragarmtreppe: Maximale Lauflänge 400 cm empfohlen.';
             } else {
-                message = 'Kragarmtreppe: Massiver Untergrund (z. B. Betondecke) erforderlich.';
+                message = 'Kragarmtreppe: Massiver Untergrund (z. B. Betondecke) erforderlich.';
             }
             break;
         default: // wange
@@ -176,30 +261,20 @@ export function computeWangenLaenge(heightCm, laufLength) {
     return Math.sqrt(heightCm * heightCm + laufLength * laufLength);
 }
 
-// === NEU: Erweiterte BOM-Generierung ===
-
 /**
- * Erzeugt eine vollständige Stückliste (BOM) mit Übersichts- und Detailpositionen.
- * @param {object} p - Berechnungsergebnis
- * @param {string} type - Treppentyp
- * @param {number} podestCm - Podesttiefe
- * @param {number} breiteCm - Laufbreite
- * @param {string} materialKey - Materialschlüssel
- * @param {string} befestigung - Befestigungsart
- * @param {number} stufenDickeMm - Stufendicke in mm
- * @returns {object} { positionen: Array, bomDetails: Array }
+ * Erzeugt eine vollständige Stückliste (BOM) mit dynamischer Schraubenauswahl.
  */
 export function generateBOM(p, type, podestCm, breiteCm, materialKey, befestigung, stufenDickeMm) {
     const material = MATERIAL_DB[materialKey] || MATERIAL_DB.eiche;
     const stufenDickeCm = stufenDickeMm / 10;
     const wangenLaenge = computeWangenLaenge(p.rise * p.steps, p.laufLength);
-    const wangenHoehe = 26; // cm (Mindesthöhe nach Norm)
+    const wangenHoehe = 26; // cm
     const wangenStaerke = 5; // cm
     
     const positionen = [];
     const bomDetails = [];
     
-    // ---- 1. Wangen (2 Stück) ----
+    // ---- 1. Wangen ----
     positionen.push({
         pos: 'Wangen',
         menge: 2,
@@ -247,28 +322,30 @@ export function generateBOM(p, type, podestCm, breiteCm, materialKey, befestigun
     // ---- 3. Setzstufen (optional) ----
     if (!p.isAttic) {
         const setzHoehe = (p.rise - stufenDickeCm).toFixed(1);
-        positionen.push({
-            pos: 'Setzstufen (optional)',
-            menge: stufenAnzahl - 1,
-            material: material.name,
-            laenge: stufenBreite + ' cm',
-            breite: setzHoehe + ' cm',
-            dicke: '2 cm (empfohlen)',
-            hinweis: 'Höhe = Steigung minus Trittstufendicke'
-        });
-        
-        for (let i = 1; i < stufenAnzahl; i++) {
-            bomDetails.push({
-                bezeichnung: `Setzstufe ${i}`,
-                menge: 1,
-                typ: material.name,
-                masse: `${stufenBreite} × ${setzHoehe} × 2 cm`,
-                hinweis: 'optional, wird zwischen Trittstufen montiert'
+        if (parseFloat(setzHoehe) > 0) {
+            positionen.push({
+                pos: 'Setzstufen (optional)',
+                menge: stufenAnzahl - 1,
+                material: material.name,
+                laenge: stufenBreite + ' cm',
+                breite: setzHoehe + ' cm',
+                dicke: '2 cm (empfohlen)',
+                hinweis: 'Höhe = Steigung minus Trittstufendicke'
             });
+            
+            for (let i = 1; i < stufenAnzahl; i++) {
+                bomDetails.push({
+                    bezeichnung: `Setzstufe ${i}`,
+                    menge: 1,
+                    typ: material.name,
+                    masse: `${stufenBreite} × ${setzHoehe} × 2 cm`,
+                    hinweis: 'optional, wird zwischen Trittstufen montiert'
+                });
+            }
         }
     }
     
-    // ---- 4. Podest (falls verwendet) ----
+    // ---- 4. Podest ----
     if (p.podestUsed) {
         positionen.push({
             pos: 'Podestplatte',
@@ -289,98 +366,85 @@ export function generateBOM(p, type, podestCm, breiteCm, materialKey, befestigun
         });
     }
     
-    // === Fortsetzung von generateBOM (Teil 2b) ===
-
-    // ---- 5. Verbindungsmittel je nach Befestigungsart ----
+    // ---- 5. Verbindungsmittel (DYNAMISCH BERECHNET) ----
+    const specs = computeFastenerSpecs(materialKey, stufenDickeMm, befestigung, breiteCm);
     const befestigungLower = befestigung.toLowerCase();
 
-    // 5.1 Schrauben für Trittstufen (pro Stufe 4 Stück, bei Wangenkonstruktion)
-    let schraubenProStufe = 4;
-    let schraubenTyp = 'Holzbauschraube 6×80 mm';
-    if (materialKey === 'stahl' || materialKey === 'beton') {
-        schraubenTyp = 'Befestigungsschraube M8×60 (Metall/Beton)';
-    }
-
-    // 5.2 Wangenbefestigung oben/unten
-    let winkelAnzahl = 0;
-    let duebelAnzahl = 0;
-    let bolzenAnzahl = 0;
-    let konsolenAnzahl = 0;
-
-    switch (befestigungLower) {
-        case 'wange':
-            // Wangen werden mit Winkeln an Decke/Boden befestigt
-            winkelAnzahl = 4;                     // 2 pro Wange
-            duebelAnzahl = 8;                     // 4 Dübel pro Wange (für Winkel)
-            bomDetails.push({
-                bezeichnung: 'Winkelverbinder',
-                menge: winkelAnzahl,
-                typ: 'Stahl verzinkt 90×90×65 mm',
-                masse: '—',
-                hinweis: 'zur Befestigung der Wangen an Decke/Boden'
-            });
+    // 5.1 Spezifische Hardware je nach Befestigungsart
+    if (befestigungLower === 'wange') {
+        bomDetails.push({
+            bezeichnung: 'Winkelverbinder',
+            menge: specs.bracketCount,
+            typ: 'Stahl verzinkt 90×90×65 mm',
+            masse: '—',
+            hinweis: 'zur Befestigung der Wangen an Decke/Boden'
+        });
+        if (specs.anchorCount > 0) {
             bomDetails.push({
                 bezeichnung: 'Dübel',
-                menge: duebelAnzahl,
-                typ: 'Nylondübel 10×80 mm',
+                menge: specs.anchorCount,
+                typ: specs.anchorType,
                 masse: '—',
                 hinweis: 'für Winkelbefestigung in Beton/Mauerwerk'
             });
-            break;
-
-        case 'bolzen':
-            // Bolzentreppe: pro Trittstufe ein Bolzenanker + Distanzhülse
-            bolzenAnzahl = stufenAnzahl;
-            bomDetails.push({
-                bezeichnung: 'Bolzenanker',
-                menge: bolzenAnzahl,
-                typ: 'M12×120 mm (Edelstahl)',
-                masse: '—',
-                hinweis: 'pro Stufe ein Anker in der Wand'
-            });
-            bomDetails.push({
-                bezeichnung: 'Distanzhülse',
-                menge: bolzenAnzahl,
-                typ: 'M12, Länge je nach Wandabstand',
-                masse: '—',
-                hinweis: 'zwischen Stufe und Wand'
-            });
-            // Zusätzliche Dübel für Handlauf (falls gewünscht)
-            break;
-
-        case 'kragarm':
-            // Kragarmtreppe: zwei seitliche Konsolen
-            konsolenAnzahl = 2;
-            bomDetails.push({
-                bezeichnung: 'Kragarmkonsole',
-                menge: konsolenAnzahl,
-                typ: 'Stahl S235, lasergeschnitten',
-                masse: `${(breiteCm - 10)} × 10 × 1 cm`,
-                hinweis: 'seitlich an tragender Wand/Betondecke montieren'
-            });
-            bomDetails.push({
-                bezeichnung: 'Schwerlastdübel',
-                menge: 8, // 4 pro Konsole
-                typ: 'M12×100 mm Verbundanker',
-                masse: '—',
-                hinweis: 'zur Befestigung der Konsolen im Untergrund'
-            });
-            break;
-    }
-
-    // Schrauben für Trittstufen (unabhängig von Befestigung, außer evtl. bei Kragarm)
-    if (befestigungLower !== 'kragarm') {
-        const schraubenGesamt = stufenAnzahl * schraubenProStufe;
+        }
+    } else if (befestigungLower === 'bolzen') {
         bomDetails.push({
-            bezeichnung: 'Schrauben',
-            menge: schraubenGesamt,
-            typ: schraubenTyp,
-            masse: '—',
-            hinweis: `pro Trittstufe ${schraubenProStufe} Stück`
+            bezeichnung: 'Bolzenanker',
+            menge: stufenAnzahl,
+            typ: `${specs.screwType} M${specs.screwDiameter}`,
+            masse: 'Länge: ' + specs.screwLength + ' mm',
+            hinweis: 'pro Stufe ein Anker in der Wand (tragfähig)'
+        });
+        bomDetails.push({
+            bezeichnung: 'Distanzhülse',
+            menge: stufenAnzahl,
+            typ: 'M12 Edelstahl',
+            masse: 'variiert je nach Wandabstand',
+            hinweis: 'zwischen Stufe und Wand'
+        });
+    } else if (befestigungLower === 'kragarm') {
+        bomDetails.push({
+            bezeichnung: 'Kragarmkonsole',
+            menge: 2,
+            typ: 'Stahl S355 lasergeschnitten',
+            masse: `${(breiteCm - 10)} × 10 × 1 cm`,
+            hinweis: 'seitlich an tragender Wand'
+        });
+        bomDetails.push({
+            bezeichnung: 'Schwerlastanker',
+            menge: 8,
+            typ: 'M12 Verbundanker',
+            masse: 'Länge 100 mm',
+            hinweis: 'zur Befestigung der Konsolen'
         });
     }
 
-    // 5.3 Handlauf (optional)
+    // 5.2 Schrauben für Stufen (nur wenn nicht durch Spezialsystem wie Bolzen/Kragarm komplett ersetzt)
+    if (befestigungLower !== 'bolzen' && befestigungLower !== 'kragarm') {
+        const schraubenGesamt = stufenAnzahl * specs.screwsPerStep;
+        const schraubenBeschreibung = `${specs.screwType} Ø${specs.screwDiameter}x${specs.screwLength}mm`;
+        
+        bomDetails.push({
+            bezeichnung: 'Verbindungsschrauben',
+            menge: schraubenGesamt,
+            typ: schraubenBeschreibung,
+            masse: '—',
+            hinweis: `pro Stufe ${specs.screwsPerStep} Stück${specs.preDrill ? ' (Vorbohren empfohlen)' : ''}`
+        });
+    } else if (befestigungLower === 'kragarm') {
+        // Bei Kragarm nur verdeckte Passschrauben
+        const schraubenGesamt = stufenAnzahl * specs.screwsPerStep;
+        bomDetails.push({
+            bezeichnung: 'Passschrauben (verdeckt)',
+            menge: schraubenGesamt,
+            typ: `${specs.screwType} M${specs.screwDiameter}x${specs.screwLength}mm`,
+            masse: '—',
+            hinweis: 'zur Befestigung auf Konsole'
+        });
+    }
+
+    // ---- 6. Handlauf (Optional aber empfohlen) ----
     const handlaufLaenge = wangenLaenge;
     positionen.push({
         pos: 'Handlauf (empfohlen)',
@@ -400,8 +464,7 @@ export function generateBOM(p, type, podestCm, breiteCm, materialKey, befestigun
         hinweis: 'inkl. Halterungen alle 80–100 cm'
     });
 
-    // Handlaufhalterungen
-    const halterAbstand = 90; // cm
+    const halterAbstand = 90;
     const halterAnzahl = Math.max(2, Math.ceil(handlaufLaenge / halterAbstand));
     bomDetails.push({
         bezeichnung: 'Handlaufhalter',
@@ -411,24 +474,13 @@ export function generateBOM(p, type, podestCm, breiteCm, materialKey, befestigun
         hinweis: 'mit Dübeln und Schrauben'
     });
 
-    // 5.4 Allgemeine Befestigungsmittel (Dübel für Handlauf etc.)
-    bomDetails.push({
-        bezeichnung: 'Dübel + Schrauben',
-        menge: halterAnzahl * 2,
-        typ: '8×60 mm',
-        masse: '—',
-        hinweis: 'für Handlaufhalterungen'
-    });
-
-    // === Rückgabe der vollständigen BOM ===
     return {
         positionen: positionen,
         bomDetails: bomDetails
     };
 }
 
-// === Kompatibilitäts-Alias für bestehenden Code ===
-// (damit main.js nicht sofort geändert werden muss)
+// Kompatibilitäts-Alias
 export function generateMaterialListe(p, type, podest, breite, materialKey, befestigung, dicke) {
     const bom = generateBOM(p, type, podest, breite, materialKey, befestigung, dicke);
     return bom.positionen;

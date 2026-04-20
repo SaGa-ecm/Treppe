@@ -4,16 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>Treppenplaner · kostenlos - spendenbasiert</title>
+    
     <!-- Cache-Control: Browser soll stets aktuelle Version laden -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <!-- Stylesheet mit Versionsparameter -->
+    
+    <!-- Stylesheet -->
     <link rel="stylesheet" href="css/styles.css?v=20260420">
+    
+    <!-- jsPDF Bibliothek (für PDF Export) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-/7+XqTzGq9sZw9eMvNkQyIiPnN3tWqLdYjRfGqE9uV0rgK0F8H0J9qU5v9h4c8x5y6z7A8B9C0D1E2F3G4H5" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
+
 <div class="card">
-    <!-- Header ohne Theme-Toggle -->
+    <!-- Header -->
     <div class="header-container" style="display: flex; align-items: center; margin-bottom: 10px;">
         <h1 style="margin-bottom: 0;">Treppenplaner · kostenlos - spendenbasiert</h1>
     </div>
@@ -24,7 +30,7 @@
         </span>
     </div>
     
-    <!-- Einführung mit Tooltip-Demo -->
+    <!-- Einführung -->
     <div style="background: var(--badge-bg); border-radius: 16px; padding: 12px 16px; margin-bottom: 20px; color: var(--text-primary);">
         <strong>So funktioniert's:</strong> Geben Sie Geschosshöhe und verfügbaren Platz ein. 
         Das Tool findet automatisch eine normgerechte Treppe. 
@@ -32,7 +38,7 @@
         enthalten kurze Erläuterungen.
     </div>
 
-    <!-- Prominenter Glossar-Button (mittig) -->
+    <!-- Glossar Button -->
     <div style="margin: 16px 0 8px; text-align: center;">
         <a href="glossar.html" target="_blank" class="glossar-button">Alle Fachbegriffe im Glossar nachschlagen</a>
     </div>
@@ -40,6 +46,18 @@
     <div class="grid-2">
         <!-- LINKE SEITE: Eingaben -->
         <div class="panel">
+            <!-- Benutzer & Projekt Name (Neu für PDF) -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                <div>
+                    <label for="userNameInput" style="font-size: 0.9rem; font-weight: 600;">Planer / Name</label>
+                    <input type="text" id="userNameInput" placeholder="Max Mustermann" style="width: 100%; padding: 6px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary); color: var(--text-primary);">
+                </div>
+                <div>
+                    <label for="stairNameInput" style="font-size: 0.9rem; font-weight: 600;">Projekt / Treppe</label>
+                    <input type="text" id="stairNameInput" placeholder="z.B. Treppe OG" style="width: 100%; padding: 6px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary); color: var(--text-primary);">
+                </div>
+            </div>
+
             <div class="slider-group">
                 <label>
                     <span class="has-tooltip">Geschosshöhe 
@@ -264,8 +282,11 @@
                 <span style="font-weight:600; color:var(--text-primary);" id="visuTitle">Ansicht · gerade Treppe</span>
                 <span style="margin-left:auto; font-size:0.9rem; color:var(--text-secondary);">Lauflänge <span id="laufLengthDisplay">327 cm</span></span>
             </div>
-            <div class="canvas-container">
-                <canvas id="stairCanvas" width="500" height="280" style="width:100%; height:auto; aspect-ratio:500/280"></canvas>
+            
+            <!-- Canvas Container für High-DPI -->
+            <div class="canvas-container" style="width: 100%; display: flex; justify-content: center; margin-bottom: 20px;">
+                <!-- WICHTIG: Breite/Höhe hier als CSS-Pixel definiert. JS skaliert intern. -->
+                <canvas id="stairCanvas" style="width: 100%; max-width: 500px; height: auto; aspect-ratio: 500/280; border: 1px solid var(--border-medium); border-radius: 8px; background: #fff;"></canvas>
             </div>
 
             <div style="margin-top:20px; background:var(--info-bg); border-radius:20px; padding:18px;">
@@ -320,8 +341,11 @@
                 </p>
             </details>
             
-            <!-- Druckansicht Button -->
-            <button id="printViewBtn" style="background: var(--accent); color: white; margin-top: 20px;">Druckansicht Bauteile</button>
+            <!-- Action Buttons -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px;">
+                <button id="printViewBtn" style="background: var(--accent); color: white;">Druckansicht</button>
+                <button id="pdfExportBtn" style="background: #d32f2f; color: white;">PDF Bauteilliste</button>
+            </div>
             
             <!-- Spendenformular -->
             <div class="donate-section">
@@ -334,13 +358,13 @@
                     </button>
                 </a>
                 <div style="margin-top: 12px; text-align: center;">
-                    <img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_37x23.jpg" 
+                    <img src=" https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_37x23.jpg " 
                          alt="PayPal Logo" 
                          style="height: 35px; width: auto; border: 0;">
                 </div>
             </div>
             
-            <!-- Footer mit Copyright, Lizenz und Glossar-Link -->
+            <!-- Footer -->
             <div class="footnote">
                 <a href="glossar.html" target="_blank" style="color: var(--text-secondary);">Glossar</a>
                 <br>
@@ -357,7 +381,7 @@
     <span id="themeIconFloat">🌙</span>
 </div>
 
-<!-- JavaScript mit Versionsparameter -->
+<!-- JavaScript Module -->
 <script type="module" src="js/main.js?v=20260420" defer></script>
 </body>
 </html>

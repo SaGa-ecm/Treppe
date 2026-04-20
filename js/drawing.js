@@ -1,29 +1,47 @@
-// === Canvas-Visualisierung ===
+// === Canvas-Visualisierung mit High-DPI-Support ===
 
 /**
- * Zeichnet die Treppe auf das Canvas.
+ * Zeichnet die Treppe auf das Canvas unter Berücksichtigung von High-DPI-Displays.
  * @param {object} p - Berechnungsergebnis (von calculator)
  * @param {string} type - Treppentyp
  * @param {number} podest - Podesttiefe in cm
- * @param {CanvasRenderingContext2D} ctx - Canvas-Kontext
- * @param {number} width - Canvas-Breite
- * @param {number} height - Canvas-Höhe
+ * @param {HTMLCanvasElement} canvas - Das Canvas-Element (nicht nur der Kontext)
+ * @param {number} cssWidth - Gewünschte Breite in CSS-Pixeln
+ * @param {number} cssHeight - Gewünschte Höhe in CSS-Pixeln
  */
-export function drawCanvas(p, type, podest, ctx, width, height) {
-    ctx.clearRect(0, 0, width, height);
+export function drawCanvas(p, type, podest, canvas, cssWidth, cssHeight) {
+    // Hole den 2D-Kontext
+    const ctx = canvas.getContext('2d');
+    
+    // Bestimme den Device Pixel Ratio (Standard ist 1, Retina oft 2 oder 3)
+    const dpr = window.devicePixelRatio || 1;
+
+    // Setze die interne Auflösung des Canvas hoch (physikalische Pixel)
+    canvas.width = cssWidth * dpr;
+    canvas.height = cssHeight * dpr;
+
+    // Skaliere den Kontext herunter, damit Koordinaten weiterhin in CSS-Pixeln angegeben werden können
+    ctx.scale(dpr, dpr);
+
+    // Stelle sicher, dass das Canvas per CSS die richtige Größe hat (verhindert unscharfes Stretching)
+    canvas.style.width = `${cssWidth}px`;
+    canvas.style.height = `${cssHeight}px`;
+
+    // Hintergrund löschen (unter Verwendung der skalierten Koordinaten)
+    ctx.clearRect(0, 0, cssWidth, cssHeight);
     
     // Fallback bei ungültigen Werten
     if (!p || p.laufLength <= 0 || p.steps <= 0 || p.rise <= 0 || p.run <= 0) {
         ctx.fillStyle = '#b55a2b';
         ctx.font = 'bold 14px system-ui';
         ctx.textAlign = 'center';
-        ctx.fillText('⚠️ Ungültige Werte – bitte anpassen', width/2, height/2);
+        ctx.fillText('⚠️ Ungültige Werte – bitte anpassen', cssWidth/2, cssHeight/2);
         return;
     }
     
     const margin = { left: 50, right: 30, top: 25, bottom: 40 };
-    const plotW = width - margin.left - margin.right;
-    const plotH = height - margin.top - margin.bottom;
+    const plotW = cssWidth - margin.left - margin.right;
+    const plotH = cssHeight - margin.top - margin.bottom;
     
     // Seitenansicht für gerade, Podest- und Dachbodentreppen
     if (type === 'gerade' || type === 'podest' || type === 'dachboden') {
@@ -63,7 +81,7 @@ export function drawCanvas(p, type, podest, ctx, width, height) {
         ctx.fillStyle = '#3f332a';
         ctx.font = '11px system-ui';
         ctx.fillText(`Höhe ${totalRise.toFixed(0)} cm`, margin.left-10, margin.top-5);
-        ctx.fillText(`Lauflänge ${p.laufLength.toFixed(0)} cm`, margin.left + p.laufLength*scaleX/2-30, height-10);
+        ctx.fillText(`Lauflänge ${p.laufLength.toFixed(0)} cm`, margin.left + p.laufLength*scaleX/2-30, cssHeight-10);
     } 
     else {
         // === Draufsicht für gewendelte Treppen ===

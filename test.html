@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treppenplaner · Unit Tests</title>
+    <style>
+        :root {
+            --bg: #f4f4f9;
+            --text: #333;
+            --success: #2e7d32;
+            --error: #c62828;
+            --card-bg: #fff;
+        }
+        body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 20px; line-height: 1.6; }
+        h1 { margin-bottom: 10px; }
+        .controls { margin-bottom: 20px; }
+        button { padding: 10px 20px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; font-size: 1rem; }
+        button:hover { background: #0056b3; }
+        
+        #results { display: grid; gap: 15px; }
+        .test-suite { background: var(--card-bg); padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .test-suite h2 { margin-top: 0; font-size: 1.2rem; border-bottom: 2px solid #eee; padding-bottom: 5px; }
+        .test-case { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
+        .test-case:last-child { border-bottom: none; }
+        .status { font-weight: bold; }
+        .pass { color: var(--success); }
+        .fail { color: var(--error); }
+        .details { font-size: 0.85rem; color: #666; margin-top: 4px; display: block; }
+        .summary { margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 8px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>🧪 Treppenplaner · Unit Tests</h1>
+    <p>Diese Suite testet die Kernlogik (calculator.js) direkt im Browser ohne Node.js.</p>
+    
+    <div class="controls">
+        <button id="runBtn">Tests ausführen</button>
+        <span id="spinner" style="display:none; margin-left:10px;">Läuft...</span>
+    </div>
+
+    <div id="results"></div>
+    <div id="summary" class="summary" style="display:none;"></div>
+
+    <script type="module">
+        import { 
+            calculateAuto, 
+            calculateManual, 
+            computeIdealLength, 
+            validateBefestigung, 
+            computeWangenLaenge, 
+            generateBOM 
+        } from './js/calculator.js';
+
+        // --- Test Framework (Minimalist) ---
+        const resultsContainer = document.getElementById('results');
+        const summaryContainer = document.getElementById('summary');
+        let totalTests = 0;
+        let passedTests = 0;
+
+        function assert(condition, message) {
+            totalTests++;
+            if (condition) {
+                passedTests++;
+                return { pass: true, msg: message };
+            } else {
+                return { pass: false, msg: message };
+            }
+        }
+
+        function renderSuite(name, results) {
+            const suiteDiv = document.createElement('div');
+            suiteDiv.className = 'test-suite';
+            
+            let html = `<h2>${name}</h2>`;
+            results.forEach(r => {
+                const statusClass = r.pass ? 'pass' : 'fail';
+                const statusIcon = r.pass ? '✅' : '❌';
+                html += `
+                    <div class="test-case">
+                        <span>${r.msg}</span>
+                        <span class="status ${statusClass}">${statusIcon}</span>
+                    </div>
+                `;
+            });
+            suiteDiv.innerHTML = html;
+            resultsContainer.appendChild(suiteDiv);
+        }
+
+        // --- Test Suites ---
+
+        function testGeometrie() {
+            const results = [];
+            
+            // Test 1: Standard Treppe
+            const res1 = calculateAuto(200, 300, 'gerade', 0, 'eiche');
+            results.push(assert(res1.valid === true, "Standard Treppe (200/300) ist valid"));
+            results.push(assert(res1.steps > 0, "Stufenanzahl > 0"));
+            results.push(assert(res1.rise > 14 && res1.rise < 19, "Steigung im Normbereich (14-19cm)"));
+            
+            // Test 2: Dachboden (steiler erlaubt)
+            const res2 = calculateAuto(200, 200, 'dachboden', 0, 'eiche');
+            results.push(assert(res2.isAttic === true, "Typ 'dachboden' erkannt"));
+            // Attic Rise kann > 19 sein
+            
+            // Test 3: Ungültige Werte (zu wenig Platz)
+            const res3 = calculateAuto(300, 100, 'gerade', 0, 'eiche');
+            results.push(assert(res3.valid === false, "Ungültige Geometrie erkannt"));
+
+            renderSuite('Geometrie Berechnung', results);
+        }
+
+        function testManuell() {
+            const results = [];
+            const res = calculateManual(200, 17, 29, 'gerade', 0);
+            
+            results.push(assert(Math.abs(res.rise - 17) < 0.1, "Manuelle Steigung übernommen"));
+            results.push(assert(res.run === 29, "Manueller Auftritt übernommen"));
+            results.push(assert(res.steps === 12, "Stufenanzahl korrekt (200/17 ≈ 11.7 -> 12)")); // 200/12 = 16.66
+            
+            renderSuite('Manuelle Eingabe', results);
+        }
+
+        function testHilfsfunktionen() {
+            const results = [];
+            
+            // Ideal Length
+            const len = computeIdealLength(200);
+            results.push(assert(len > 0, "Ideal Length berechnet"));
+
+            // Wangenlänge (Pythagoras)
+            const wl = computeWangenLaenge(200, 300);
+            const expected = Math.sqrt(200*200 + 300*300);
+            results.push(assert(Math.abs(wl - expected) < 0.1, "Wangenlänge (Pythagoras) korrekt"));
+
+            // Befestigung Validierung
+            const validWange = validateBefestigung('wange', 100, false, 300);
+            results.push(assert(validWange.ok === true, "Wangenkonstruktion valide"));
+
+            const invalidKrag = validateBefestigung('kragarm', 100, true, 300); // Podest bei Kragarm ungültig
+            results.push(assert(invalidKrag.ok === false, "Kragarm mit Podest ungültig"));
+
+            renderSuite('Hilfsfunktionen & Validierung', results);
+        }
+
+        function testBOM() {
+            const results = [];
+            
+            // Basis Daten
+            const p = calculateAuto(200, 300, 'gerade', 0, 'eiche');
+            const bom = generateBOM(p, 'gerade', 0, 100, 'eiche', 'wange', 50);
+
+            results.push(assert(bom.positionen.length > 0, "Positionen generiert"));
+            results.push(assert(bom.bomDetails.length > 0, "Details generiert"));
+
+            // Schrauben Check (Der Bugfix Test)
+            const schraubenDetail = bom.bomDetails.find(d => d.bezeichnung.includes('Schraube') || d.bezeichnung.includes('Verbindung'));
+            if (schraubenDetail) {
+                results.push(assert(schraubenDetail.menge > 0, "Schraubenmenge > 0"));
+                results.push(assert(schraubenDetail.typ.includes('mm'), "Schraubentyp enthält Maßeinheit (Länge/Durchmesser)"));
+                results.push(assert(schraubenDetail.typ.includes('Ø') || schraubenDetail.typ.includes('x'), "Schraubentyp Format korrekt"));
+            } else {
+                results.push(assert(false, "Keine Schrauben in BOM gefunden"));
+            }
+
+            // Material spezifisch
+            const bomSteel = generateBOM(p, 'gerade', 0, 100, 'stahl', 'wange', 20);
+            const steelScrew = bomSteel.bomDetails.find(d => d.bezeichnung.includes('Schraube') || d.bezeichnung.includes('Verbindung'));
+            if (steelScrew) {
+                results.push(assert(steelScrew.typ.includes('M8') || steelScrew.typ.includes('Metall'), "Stahl-Schrauben Typ angepasst"));
+            }
+
+            renderSuite('Stückliste (BOM) & Schrauben', results);
+        }
+
+        // --- Main Runner ---
+        document.getElementById('runBtn').addEventListener('click', () => {
+            resultsContainer.innerHTML = '';
+            totalTests = 0;
+            passedTests = 0;
+            
+            setTimeout(() => {
+                try {
+                    testGeometrie();
+                    testManuell();
+                    testHilfsfunktionen();
+                    testBOM();
+                    
+                    summaryContainer.style.display = 'block';
+                    summaryContainer.textContent = `Ergebnis: ${passedTests}/${totalTests} Tests bestanden.`;
+                    summaryContainer.style.background = passedTests === totalTests ? '#d4edda' : '#f8d7da';
+                    summaryContainer.style.color = passedTests === totalTests ? '#155724' : '#721c24';
+                } catch (e) {
+                    console.error(e);
+                    summaryContainer.style.display = 'block';
+                    summaryContainer.textContent = `Fehler während der Tests: ${e.message}`;
+                    summaryContainer.style.background = '#f8d7da';
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>
