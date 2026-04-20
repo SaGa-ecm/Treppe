@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treppenplaner · Bauteilliste</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+        }
+        body {
+            background: #f5f3f0;
+            padding: 20px;
+            color: #2e241e;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 24px;
+            padding: 30px 25px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2e241e;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .subtitle {
+            color: #6b5a4e;
+            margin-bottom: 30px;
+            border-left: 4px solid #b08968;
+            padding-left: 16px;
+            font-weight: 400;
+        }
+        .summary {
+            background: #f1ebe6;
+            border-radius: 20px;
+            padding: 18px 20px;
+            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px 40px;
+            border: 1px solid #ddd2c8;
+        }
+        .summary-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .summary-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: #6b5a4e;
+        }
+        .summary-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2e241e;
+        }
+        .summary-unit {
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: #6b5a4e;
+            margin-left: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.95rem;
+        }
+        th {
+            text-align: left;
+            padding: 12px 8px;
+            border-bottom: 2px solid #b08968;
+            font-weight: 600;
+            color: #2e241e;
+            background: #fdfaf7;
+        }
+        td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #e6dfd7;
+        }
+        .amount {
+            text-align: right;
+            font-weight: 600;
+        }
+        .footer-note {
+            margin-top: 30px;
+            padding: 16px;
+            background: #fff3e6;
+            border-radius: 16px;
+            border-left: 4px solid #b08968;
+            font-size: 0.9rem;
+        }
+        .print-btn {
+            background: #2e241e;
+            color: white;
+            border: none;
+            border-radius: 60px;
+            padding: 12px 24px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-bottom: 20px;
+            border: 1px solid #ddd2c8;
+        }
+        .print-btn:hover {
+            background: #4a3a2a;
+        }
+        @media print {
+            body { background: white; padding: 0.5cm; }
+            .container { box-shadow: none; padding: 0; }
+            .print-btn { display: none; }
+            .summary { background: #f9f9f9; border: 1px solid #ccc; }
+            th { background: #eee; border-bottom-color: #999; }
+        }
+        .no-data {
+            color: #b55a2b;
+            font-weight: 500;
+            text-align: center;
+            padding: 30px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <button class="print-btn" onclick="window.print()">🖨️ Jetzt drucken</button>
+    <h1>🪵 Treppenplaner · Bauteilliste</h1>
+    <div class="subtitle">Materialbedarf und Zuschnittmaße (alle Angaben in cm, sofern nicht anders)</div>
+    
+    <div id="summaryContainer" class="summary">
+        <!-- Dynamisch gefüllt -->
+    </div>
+    
+    <h2 style="margin: 24px 0 8px; font-size: 1.5rem;">📋 Positionen</h2>
+    <div id="tableContainer">
+        <!-- Dynamisch gefüllt -->
+    </div>
+    
+    <div class="footer-note">
+        <strong>⚠️ Hinweis:</strong> Diese Liste ist eine Planungshilfe. Verschnitt, Toleranzen und statische Erfordernisse sind eigenverantwortlich zu berücksichtigen. 
+        Alle Maße wurden nach bestem Wissen gemäß DIN 18065 und Eurocode 1 ermittelt.
+    </div>
+</div>
+
+<script>
+    (function() {
+        const dataStr = localStorage.getItem('treppeData');
+        if (!dataStr) {
+            document.getElementById('tableContainer').innerHTML = '<p class="no-data">Keine Daten vorhanden. Bitte zuerst im Treppenplaner eine Berechnung durchführen.</p>';
+            return;
+        }
+        
+        try {
+            const data = JSON.parse(dataStr);
+            
+            // Zusammenfassung
+            const summaryHtml = `
+                <div class="summary-item">
+                    <span class="summary-label">Geschosshöhe</span>
+                    <span class="summary-value">${data.height}<span class="summary-unit">cm</span></span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Lauflänge</span>
+                    <span class="summary-value">${data.laufLength}<span class="summary-unit">cm</span></span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Steigung / Auftritt</span>
+                    <span class="summary-value">${data.rise} / ${data.run}<span class="summary-unit">cm</span></span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Stufen</span>
+                    <span class="summary-value">${data.steps}<span class="summary-unit"></span></span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Winkel</span>
+                    <span class="summary-value">${data.angle}<span class="summary-unit">°</span></span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Laufbreite</span>
+                    <span class="summary-value">${data.breite}<span class="summary-unit">cm</span></span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Material</span>
+                    <span class="summary-value">${data.materialName}<span class="summary-unit"></span></span>
+                </div>
+            `;
+            document.getElementById('summaryContainer').innerHTML = summaryHtml;
+            
+            // Tabelle
+            let tableHtml = `<table>
+                <thead><tr><th>Position</th><th>Menge</th><th>Material</th><th>Maße (L×B×D)</th><th>Hinweis</th></tr></thead><tbody>`;
+            
+            data.positionen.forEach(pos => {
+                tableHtml += `<tr>
+                    <td>${pos.pos}</td>
+                    <td class="amount">${pos.menge}</td>
+                    <td>${pos.material}</td>
+                    <td>${pos.laenge} × ${pos.breite} × ${pos.dicke}</td>
+                    <td>${pos.hinweis}</td>
+                </tr>`;
+            });
+            tableHtml += `</tbody></table>`;
+            document.getElementById('tableContainer').innerHTML = tableHtml;
+            
+        } catch(e) {
+            document.getElementById('tableContainer').innerHTML = '<p class="no-data">Fehler beim Laden der Daten.</p>';
+        }
+    })();
+</script>
+</body>
+</html>

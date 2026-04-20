@@ -68,6 +68,7 @@ const befestigungSelect = document.getElementById('befestigungSelect');
 const wangenLaengeSpan = document.getElementById('wangenLaenge');
 const befestigungStatus = document.getElementById('befestigungStatus');
 const materialListeContainer = document.getElementById('materialListeContainer');
+const printViewBtn = document.getElementById('printViewBtn');
 
 const themeToggle = document.getElementById('themeToggle');
 const themeIcon = document.getElementById('themeIcon');
@@ -274,7 +275,24 @@ function renderAll() {
     
     // Materialliste rendern
     renderMaterialListe(p, type, podest, breite, materialKey, befestigung, dicke);
+    
+    // === Daten für Druckansicht speichern ===
+    const material = MATERIAL_DB[materialKey] || MATERIAL_DB.eiche;
+    const positionen = generateMaterialListe(p, type, podest, breite, materialKey, befestigung, dicke);
+    const druckDaten = {
+        height: height,
+        laufLength: berechneteLauflaenge,
+        rise: p.rise.toFixed(1),
+        run: p.run.toFixed(1),
+        steps: p.steps,
+        angle: p.angle.toFixed(1),
+        breite: breite,
+        materialName: material.name,
+        positionen: positionen
+    };
+    localStorage.setItem('treppeData', JSON.stringify(druckDaten));
 }
+
 // === Manuelle Modus-Steuerung ===
 function activateManualMode() {
     manuellerModus = true;
@@ -318,6 +336,13 @@ applyBtn.onclick = () => {
     }
     renderAll();
 };
+
+// Druckansicht öffnen
+if (printViewBtn) {
+    printViewBtn.addEventListener('click', () => {
+        window.open('print.html', '_blank');
+    });
+}
 
 // === Initialer Render ===
 renderAll();
