@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>Treppenplaner · Breite & Statik · DIN 18065</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            font-family: system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+        body {
+            background: #f5f3f0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+        .card {
+            max-width: 1200px;
+            width: 100%;
+            background: #fffcf9;
+            border-radius: 32px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+            padding: 24px 20px 32px;
+            border: 1px solid #e6dfd7;
+        }
+        h1 {
+            font-weight: 600;
+            font-size: 1.9rem;
+            color: #2e241e;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 4px;
+            flex-wrap: wrap;
+        }
+        .subtitle {
+            color: #6b5a4e;
+            margin-bottom: 24px;
+            border-left: 4px solid #b08968;
+            padding-left: 16px;
+            font-weight: 400;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1.1fr;
+            gap: 24px;
+        }
+        @media (max-width: 750px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            body { padding: 10px; }
+            .card { padding: 18px 14px; }
+        }
+        .panel {
+            background: #fdfaf7;
+            border-radius: 24px;
+            padding: 20px 18px;
+            border: 1px solid #ddd2c8;
+        }
+        .slider-group {
+            margin-bottom: 24px;
+        }
+        label {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 500;
+            color: #3b322a;
+            margin-bottom: 6px;
+            align-items: center;
+        }
+        .value-badge {
+            background: #e7dbd1;
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #2c1f16;
+        }
+        input[type=range] {
+            width: 100%;
+            margin: 10px 0 4px;
+            -webkit-appearance: none;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            height: 8px;
+            background: #d9cbc1;
+            border-radius: 10px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 26px;
+            width: 26px;
+            border-radius: 26px;
+            background: #8b5e3c;
+            margin-top: -9px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            border: 2px solid #fff;
+            cursor: grab;
+        }
+        select {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 40px;
+            border: 1px solid #d4c7bc;
+            background: white;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #2e241e;
+            margin: 8px 0 4px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px 10px;
+            margin: 20px 0 18px;
+        }
+        .stat-card {
+            background: white;
+            padding: 14px 8px;
+            border-radius: 18px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            border: 1px solid #e4d9d0;
+            text-align: center;
+        }
+        .stat-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: #7a6859;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1.2;
+            color: #2e241e;
+        }
+        .stat-unit {
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: #7e6b5c;
+            margin-left: 2px;
+        }
+        .norm-status {
+            background: #e7f0e9;
+            border-radius: 40px;
+            padding: 12px 18px;
+            font-weight: 500;
+            margin: 16px 0 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-left: 6px solid #3c6e4a;
+        }
+        .warning-box {
+            background: #fff0e0;
+            border-left: 6px solid #c06b2e;
+        }
+        .step-list {
+            max-height: 220px;
+            overflow-y: auto;
+            background: white;
+            border-radius: 18px;
+            padding: 4px 6px;
+            border: 1px solid #ddd2c8;
+        }
+        .step-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 14px;
+            border-bottom: 1px solid #ede3db;
+            font-size: 0.95rem;
+        }
+        .canvas-container {
+            background: #f3ede8;
+            border-radius: 20px;
+            padding: 16px 10px;
+            margin-top: 10px;
+            text-align: center;
+            border: 1px solid #d4c7bc;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            background: #fcf9f6;
+            border-radius: 12px;
+            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+        }
+        button {
+            background: #2e241e;
+            color: white;
+            border: none;
+            border-radius: 60px;
+            padding: 12px 20px;
+            font-weight: 600;
+            font-size: 1rem;
+            width: 100%;
+            cursor: pointer;
+            border: 1px solid #4a3c33;
+            margin-top: 12px;
+        }
+        .footnote {
+            margin-top: 16px;
+            font-size: 0.8rem;
+            color: #7f6e60;
+            text-align: center;
+        }
+        .tooltip-text {
+            visibility: hidden;
+            background: #2e241e;
+            color: #fff;
+            text-align: left;
+            border-radius: 12px;
+            padding: 8px 12px;
+            position: absolute;
+            z-index: 10;
+            bottom: 125%;
+            left: 0;
+            width: 240px;
+            font-size: 0.85rem;
+            font-weight: normal;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .has-tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+        }
+        .has-tooltip:hover .tooltip-text {
+            visibility: visible;
+        }
+        #podestGroup {
+            margin-top: 16px;
+            transition: opacity 0.2s;
+        }
+        .info-note {
+            background: #fff3e6;
+            border-radius: 16px;
+            padding: 10px 14px;
+            font-size: 0.9rem;
+            border-left: 4px solid #b08968;
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>🪵 Treppenplaner · Breite & Statik <span style="font-weight:300; font-size:1.2rem; margin-left:auto;">DIN 18065 / EC1</span></h1>
+    <div class="subtitle">
+        Schrittmaßregel · Laufbreite · Lastannahmen · 
+        <span class="has-tooltip" style="font-weight:400;">DAU‑Modus 
+            <span class="tooltip-text">Selbsterklärend – auch ohne Vorwissen nutzbar.<br>Alle Fachbegriffe werden per Mouseover erklärt.</span>
+        </span>
+    </div>
+    
+    <div class="grid-2">
+        <!-- LINKE SEITE: Eingaben -->
+        <div class="panel">
+            <div class="slider-group">
+                <label>
+                    <span class="has-tooltip">📏 Geschosshöhe 
+                        <span class="tooltip-text">Höhe von Oberkante Fertigfußboden (OKFF) unten bis OKFF oben.</span>
+                    </span>
+                    <span class="value-badge" id="heightDisplay">200 cm</span>
+                </label>
+                <input type="range" id="heightSlider" min="160" max="350" value="200" step="1">
+                <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#6e5e51;">
+                    <span>160 cm</span>
+                    <span>350 cm</span>
+                </div>
+            </div>
+
+            <div class="slider-group">
+                <label>
+                    <span class="has-tooltip">📐 Horizontale Entfernung 
+                        <span class="tooltip-text">Verfügbarer Platz für die Treppe (Lauflänge).</span>
+                    </span>
+                    <span class="value-badge" id="distanceDisplay">100 cm</span>
+                </label>
+                <input type="range" id="distanceSlider" min="80" max="500" value="100" step="5">
+                <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#6e5e51;">
+                    <span>80 cm</span>
+                    <span>500 cm</span>
+                </div>
+            </div>
+
+            <div style="margin: 10px 0 20px;">
+                <label>
+                    <span class="has-tooltip">🧩 Treppenform 
+                        <span class="tooltip-text">Gerade = normale Treppe.<br>Viertelgewendelt = 90°.<br>Halbgewendelt = 180°.<br>Podest = Zwischenpodest.<br>Dachboden = Raumspar.</span>
+                    </span>
+                </label>
+                <select id="stairTypeSelect">
+                    <option value="gerade" selected>Gerade Treppe (Standard)</option>
+                    <option value="viertel">Viertelgewendelt (90°)</option>
+                    <option value="halb">Halbgewendelt (180°)</option>
+                    <option value="podest">Podesttreppe (gerade mit Podest)</option>
+                    <option value="dachboden">🪜 Dachbodentreppe (Raumspar)</option>
+                </select>
+            </div>
+            
+            <div id="podestGroup" style="display: none;">
+                <label>
+                    <span class="has-tooltip">🛑 Podesttiefe 
+                        <span class="tooltip-text">Länge des Zwischenpodests in Laufrichtung (min. 80 cm).</span>
+                    </span>
+                    <span class="value-badge" id="podestDisplay">100 cm</span>
+                </label>
+                <input type="range" id="podestSlider" min="80" max="150" value="100" step="5">
+            </div>
+
+            <!-- NEU: Nutzbare Laufbreite -->
+            <div class="slider-group">
+                <label>
+                    <span class="has-tooltip">📏 Nutzbare Laufbreite 
+                        <span class="tooltip-text">Lichtes Maß zwischen Wänden oder Handläufen.<br>Min. 80 cm (Wohngebäude), 100 cm (öffentlich).</span>
+                    </span>
+                    <span class="value-badge" id="breiteDisplay">100 cm</span>
+                </label>
+                <input type="range" id="breiteSlider" min="50" max="150" value="100" step="5">
+                <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#6e5e51;">
+                    <span>50 cm</span>
+                    <span>150 cm</span>
+                </div>
+            </div>
+
+            <!-- NEU: Gebäudetyp -->
+            <div style="margin: 10px 0 20px;">
+                <label>
+                    <span class="has-tooltip">🏢 Gebäudetyp / Nutzung 
+                        <span class="tooltip-text">Bestimmt die erforderliche Mindestbreite und die anzusetzenden Lasten (Eurocode 1).</span>
+                    </span>
+                </label>
+                <select id="gebaeudeSelect">
+                    <option value="wohn" selected>Wohngebäude (EFH, bis 2 WE)</option>
+                    <option value="public">Öffentliches Gebäude / Mehrfamilienhaus</option>
+                </select>
+            </div>
+
+            <div style="background:#ece3db; border-radius:20px; padding:4px 16px; margin: 20px 0;">
+                <p style="display:flex; gap:12px; align-items:center; margin:10px 0;">
+                    <span class="has-tooltip" style="font-weight:600;">🪜 Schrittmaß (2s+a): 
+                        <span class="tooltip-text">Idealer Bereich 59–65 cm.<br>Formel: 2×Steigung + Auftritt.</span>
+                    </span>
+                    <span id="schrittmassValue" style="font-size:1.7rem; font-weight:700;">—</span>
+                    <span style="margin-left:auto; background:#5e4b3c; color:white; padding:4px 14px; border-radius:40px;" id="normTag">—</span>
+                </p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label has-tooltip">Steigungen <span class="tooltip-text">Anzahl der Stufen.</span></div>
+                    <div class="stat-number" id="stepsCount">12</div>
+                    <div class="stat-unit">Stufen</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label has-tooltip">Steigung (s) <span class="tooltip-text">Höhe einer Stufe.</span></div>
+                    <div class="stat-number" id="riseValue">16.7</div>
+                    <div class="stat-unit">cm</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label has-tooltip">Auftritt (a) <span class="tooltip-text">Tiefe der Trittfläche.</span></div>
+                    <div class="stat-number" id="runValue">29.7</div>
+                    <div class="stat-unit">cm</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label has-tooltip">Winkel <span class="tooltip-text">Steigungswinkel.</span></div>
+                    <div class="stat-number" id="angleValue">29.3</div>
+                    <div class="stat-unit">°</div>
+                </div>
+            </div>
+
+            <div id="statusMessage" class="norm-status">
+                <span style="font-size:1.8rem;">✅</span> 
+                <span id="statusText">Bequeme Treppe · DIN‑konform</span>
+            </div>
+
+            <div style="margin: 18px 0 8px;">
+                <p style="font-weight:600; margin-bottom:8px; display:flex;">📋 Stufendetails <span style="margin-left:auto; font-weight:400;" id="stepDetailHint"></span></p>
+                <div class="step-list" id="stepListContainer"></div>
+            </div>
+
+            <button id="applyRecommendedBtn">✨ Empfohlene Lauflänge für diese Höhe</button>
+        </div>
+
+        <!-- RECHTE SEITE: Visualisierung + Bauinfos -->
+        <div class="panel" style="display:flex; flex-direction:column;">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
+                <span style="background:#b08968; width:12px; height:12px; border-radius:4px;"></span>
+                <span style="font-weight:600;" id="visuTitle">Ansicht · gerade Treppe</span>
+                <span style="margin-left:auto; font-size:0.9rem;">Lauflänge <span id="laufLengthDisplay">327 cm</span></span>
+            </div>
+            <div class="canvas-container">
+                <canvas id="stairCanvas" width="500" height="280" style="width:100%; height:auto; aspect-ratio:500/280"></canvas>
+            </div>
+
+            <div style="margin-top:20px; background:#f1ebe6; border-radius:20px; padding:18px;">
+                <h3 style="display:flex; gap:8px; margin-bottom:14px; font-weight:600;">🪚 Bauinfos · DIN 18065 & Eurocode 1</h3>
+                <ul style="list-style-type:none; padding-left:6px; display:flex; flex-direction:column; gap:12px;">
+                    <li style="display:flex; gap:12px;" class="has-tooltip">🔹 <strong>Steigung (s):</strong> 14–19 cm · ideal 17 cm <span class="tooltip-text">Maximal 19 cm zulässig.</span></li>
+                    <li style="display:flex; gap:12px;" class="has-tooltip">🔸 <strong>Auftritt (a):</strong> 26–32 cm · ideal 29 cm <span class="tooltip-text">Mindestens 24 cm.</span></li>
+                    <li style="display:flex; gap:12px;" class="has-tooltip">📐 <strong>Schrittmaß 2s+a = 59–65 cm</strong> <span class="tooltip-text">Bequem & sicher.</span></li>
+                    <li style="display:flex; gap:12px;">🧱 <strong>Wangenholz:</strong> Mindesthöhe 26 cm, Stärke 5 cm</li>
+                    
+                    <!-- NEU: Breiten-Status -->
+                    <li style="display:flex; gap:12px;" id="breitenStatusLi">
+                        <span>📊 <strong>Breiten‑Status:</strong></span>
+                        <span id="breitenStatus">konform (≥80 cm)</span>
+                    </li>
+                    
+                    <!-- NEU: Lastannahmen -->
+                    <li style="display:flex; gap:12px;" class="has-tooltip">
+                        <span>⚖️ <strong>Lastannahmen:</strong></span>
+                        <span id="lastAngaben">3,0 kN/m² · 2,0 kN</span>
+                        <span class="tooltip-text">Flächenlast (kN/m²) und Einzellast pro Stufe (kN).<br>Gemäß DIN EN 1991-1-1 (Eurocode 1).</span>
+                    </li>
+                </ul>
+                
+                <!-- Haftungshinweis -->
+                <div class="info-note" style="margin-top:16px;">
+                    ⚠️ <strong>Planungshilfe</strong> – Die angegebenen Lastwerte ersetzen keinen statischen Nachweis durch einen Fachplaner.
+                </div>
+                
+                <p style="margin-top:18px; border-top:1px dashed #b8a79a; padding-top:14px; font-size:0.9rem;" id="adviceText">
+                ⚠️ Platz reicht nicht für Normtreppe.
+                </p>
+            </div>
+            <div class="footnote">
+                ⚡ Live‑Berechnung · Ampelsystem · Laufbreite & Statik
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    (function(){
+        "use strict";
+
+        // DOM Elemente
+        const heightSlider = document.getElementById('heightSlider');
+        const distanceSlider = document.getElementById('distanceSlider');
+        const podestSlider = document.getElementById('podestSlider');
+        const typeSelect = document.getElementById('stairTypeSelect');
+        const podestGroup = document.getElementById('podestGroup');
+        const heightDisplay = document.getElementById('heightDisplay');
+        const distanceDisplay = document.getElementById('distanceDisplay');
+        const podestDisplay = document.getElementById('podestDisplay');
+        const schrittmassSpan = document.getElementById('schrittmassValue');
+        const normTag = document.getElementById('normTag');
+        const stepsCount = document.getElementById('stepsCount');
+        const riseValue = document.getElementById('riseValue');
+        const runValue = document.getElementById('runValue');
+        const angleValue = document.getElementById('angleValue');
+        const statusMessageDiv = document.getElementById('statusMessage');
+        const statusText = document.getElementById('statusText');
+        const stepListContainer = document.getElementById('stepListContainer');
+        const laufLengthDisplay = document.getElementById('laufLengthDisplay');
+        const adviceText = document.getElementById('adviceText');
+        const visuTitle = document.getElementById('visuTitle');
+        const stepDetailHint = document.getElementById('stepDetailHint');
+        const canvas = document.getElementById('stairCanvas');
+        const ctx = canvas.getContext('2d');
+        const applyBtn = document.getElementById('applyRecommendedBtn');
+        
+        // NEUE Elemente
+        const breiteSlider = document.getElementById('breiteSlider');
+        const gebaeudeSelect = document.getElementById('gebaeudeSelect');
+        const breiteDisplay = document.getElementById('breiteDisplay');
+        const breitenStatus = document.getElementById('breitenStatus');
+        const lastAngaben = document.getElementById('lastAngaben');
+
+        // Standard-DIN-Grenzen (für notwendige Treppen)
+        const MIN_SCHRITTMASS = 59;
+        const MAX_SCHRITTMASS = 65;
+        const MAX_RISE = 19.0;
+        const MIN_RISE = 14.0;
+        const MIN_RUN = 24.0;
+
+        // Gelockerte Grenzen für Dachbodentreppe (Raumspar)
+        const ATTIC_MIN_RISE = 18.0;
+        const ATTIC_MAX_RISE = 26.0;
+        const ATTIC_MIN_RUN = 15.0;
+
+        // Hilfsfunktionen für Breite und Lasten
+        function getMindestbreite(gebaeudeTyp) {
+            return gebaeudeTyp === 'wohn' ? 80 : 100;
+        }
+
+        function getLasten(gebaeudeTyp) {
+            if (gebaeudeTyp === 'wohn') {
+                return { flaeche: 3.0, einzel: 2.0 }; // kN/m², kN
+            } else {
+                return { flaeche: 5.0, einzel: 2.0 };
+            }
+        }
+
+        function calculateStairs(heightCm, availRunCm, type, podestCm) {
+        // === Fortsetzung des JavaScript-Codes ===
+
+        const isAttic = (type === 'dachboden');
+        const minRise = isAttic ? ATTIC_MIN_RISE : MIN_RISE;
+        const maxRise = isAttic ? ATTIC_MAX_RISE : MAX_RISE;
+        const minRun  = isAttic ? ATTIC_MIN_RUN  : MIN_RUN;
+        
+        let effectiveRun = availRunCm;
+        let podestUsed = false;
+        let wendelAbzug = 0;
+        
+        if (type === 'viertel') wendelAbzug = 30;
+        if (type === 'halb') wendelAbzug = 60;
+        if (type === 'podest' && podestCm >= 80) {
+            effectiveRun = availRunCm - podestCm;
+            podestUsed = true;
+        }
+        if (type === 'viertel' || type === 'halb') {
+            effectiveRun = Math.max(availRunCm - wendelAbzug, 80);
+        }
+        
+        let bestN = null, bestS = 0, bestA = 0, bestSchritt = 0, bestScore = Infinity;
+        
+        for (let n = 3; n <= 25; n++) {
+            const s = heightCm / n;
+            if (s < minRise - 0.5 || s > maxRise + 1.0) continue;
+            
+            let a;
+            if (podestUsed) {
+                a = effectiveRun / (n - 1);
+            } else {
+                a = effectiveRun / (n - 1);
+            }
+            if (a < minRun - 1.0 || a > 38) continue;
+            
+            const schritt = 2 * s + a;
+            if (!isAttic) {
+                if (schritt < MIN_SCHRITTMASS - 2 || schritt > MAX_SCHRITTMASS + 2) continue;
+            }
+            
+            const idealSchritt = 62.5;
+            const idealRise = 17.0;
+            const score = Math.abs(schritt - idealSchritt)*2 + Math.abs(s - idealRise)*1.5;
+            if (bestN === null || score < bestScore) {
+                bestN = n; bestS = s; bestA = a; bestSchritt = schritt; bestScore = score;
+            }
+        }
+        
+        if (bestN === null) {
+            let nFallback = Math.round(heightCm / 17.0);
+            nFallback = Math.min(22, Math.max(3, nFallback));
+            const sFallback = heightCm / nFallback;
+            let aFallback;
+            if (podestUsed) aFallback = effectiveRun / (nFallback - 1);
+            else aFallback = effectiveRun / (nFallback - 1);
+            const schrittFallback = 2 * sFallback + aFallback;
+            return {
+                steps: nFallback, rise: sFallback, run: aFallback, schrittmass: schrittFallback,
+                laufLength: availRunCm, angle: Math.atan(sFallback / aFallback) * 180 / Math.PI,
+                valid: false, comfort: 'außerhalb Norm', podestUsed, wendelAbzug, effectiveRun,
+                isAttic
+            };
+        }
+        
+        const angle = Math.atan(bestS / bestA) * 180 / Math.PI;
+        let valid = false;
+        if (isAttic) {
+            valid = (bestS >= ATTIC_MIN_RISE && bestS <= ATTIC_MAX_RISE && bestA >= ATTIC_MIN_RUN);
+        } else {
+            valid = (bestSchritt >= 59 && bestSchritt <= 65 && bestS <= 19.0 && bestA >= 24.0);
+        }
+        let comfort = valid ? (isAttic ? 'Raumspar' : 'DIN-konform') : 'nicht normgerecht';
+        if (!isAttic && bestS < 16 && bestA > 29) comfort = 'sehr bequem';
+        else if (!isAttic && bestS > 18.5) comfort = 'steil';
+        
+        return { steps: bestN, rise: bestS, run: bestA, schrittmass: bestSchritt, laufLength: availRunCm,
+                 angle, valid, comfort, podestUsed, wendelAbzug, effectiveRun, isAttic };
+    }
+
+    function renderAll() {
+        const height = parseFloat(heightSlider.value);
+        const distance = parseFloat(distanceSlider.value);
+        const type = typeSelect.value;
+        const podest = parseFloat(podestSlider.value);
+        const breite = parseFloat(breiteSlider.value);
+        const gebaeude = gebaeudeSelect.value;
+        
+        heightDisplay.textContent = height + ' cm';
+        distanceDisplay.textContent = distance + ' cm';
+        podestDisplay.textContent = podest + ' cm';
+        breiteDisplay.textContent = breite + ' cm';
+        podestGroup.style.display = (type === 'podest') ? 'block' : 'none';
+        
+        const p = calculateStairs(height, distance, type, podest);
+        
+        stepsCount.textContent = p.steps;
+        riseValue.textContent = p.rise.toFixed(1);
+        runValue.textContent = p.run.toFixed(1);
+        angleValue.textContent = p.angle.toFixed(1);
+        schrittmassSpan.textContent = p.schrittmass.toFixed(1) + ' cm';
+        laufLengthDisplay.textContent = p.laufLength.toFixed(0) + ' cm';
+        
+        // Breiten- und Lastberechnung
+        const mindestbreite = getMindestbreite(gebaeude);
+        const lasten = getLasten(gebaeude);
+        const breiteOk = breite >= mindestbreite;
+        
+        breitenStatus.textContent = breiteOk ? `konform (≥${mindestbreite} cm)` : `zu schmal (<${mindestbreite} cm)`;
+        breitenStatus.style.color = breiteOk ? '#2e7d32' : '#b55a2b';
+        lastAngaben.textContent = `${lasten.flaeche.toFixed(1)} kN/m² · ${lasten.einzel.toFixed(1)} kN`;
+        
+        // Gesamtvalidität (Geometrie + Breite)
+        const geometrieOk = p.valid;
+        const gesamtValid = geometrieOk && breiteOk;
+        
+        normTag.textContent = gesamtValid ? (p.isAttic ? '✅ Raumspar' : '✅ DIN') : '⚠️ außerhalb Norm';
+        normTag.style.background = gesamtValid ? '#3c6e4a' : '#b55a2b';
+        statusMessageDiv.className = gesamtValid ? 'norm-status' : 'norm-status warning-box';
+        
+        if (p.isAttic) {
+            statusText.textContent = gesamtValid ? 'Raumspartreppe · nur für gelegentliche Nutzung' : 'Raumspartreppe außerhalb empfohlener Grenzen';
+        } else {
+            statusText.textContent = gesamtValid ? 'DIN‑konform · bequeme Treppe' : 'Nicht normgerecht · Prüfen Sie Geometrie oder Breite';
+        }
+        
+        let advice = '';
+        if (!geometrieOk) {
+            if (p.run < (p.isAttic ? ATTIC_MIN_RUN : MIN_RUN)) advice = 'Auftritt zu schmal.';
+            else if (p.rise > (p.isAttic ? ATTIC_MAX_RISE : MAX_RISE)) advice = 'Steigung zu hoch.';
+            else if (!p.isAttic) advice = 'Schrittmaß außerhalb 59–65 cm.';
+            else advice = 'Grenzwerte für Raumspartreppe überschritten.';
+        } else if (!breiteOk) {
+            advice = `Laufbreite zu gering (mind. ${mindestbreite} cm für diesen Gebäudetyp).`;
+        } else {
+            advice = p.isAttic ? 'Raumspartreppe – keine notwendige Treppe nach DIN 18065.' : 'Platzbedarf und Breite normgerecht.';
+        }
+        if (type === 'viertel' || type === 'halb') {
+            advice += ' Wendelung berücksichtigt (Abzug ' + p.wendelAbzug + ' cm).';
+        }
+        if (p.podestUsed) advice += ' Podesttiefe ' + podest + ' cm.';
+        adviceText.textContent = '📌 ' + advice;
+        
+        // Stufendetails
+        const n = p.steps;
+        const rise = p.rise;
+        const run = p.run;
+        let listHtml = '';
+        for (let i=1; i<=n; i++) {
+            const hoehe = (i * rise).toFixed(1);
+            let auftrittInfo = '';
+            if (i < n) {
+                if (p.podestUsed && i === 1) auftrittInfo = 'Podest ' + podest + ' cm';
+                else auftrittInfo = 'Auftritt ' + run.toFixed(1) + ' cm';
+            } else {
+                auftrittInfo = 'Austritt';
+            }
+            listHtml += `<div class="step-row"><span>Stufe ${i}</span><span>${hoehe} cm</span><span style="color:#6b5849;">${auftrittInfo}</span></div>`;
+        }
+        stepListContainer.innerHTML = listHtml;
+        stepDetailHint.textContent = `Auftritt ${run.toFixed(1)} cm`;
+        
+        // Visualisierungstitel
+        let title = 'Ansicht · ';
+        if (type === 'gerade') title += 'gerade Treppe';
+        else if (type === 'viertel') title += 'viertelgewendelt (Draufsicht)';
+        else if (type === 'halb') title += 'halbgewendelt (Draufsicht)';
+        else if (type === 'podest') title += 'Podesttreppe';
+        else if (type === 'dachboden') title += 'Dachbodentreppe (steil)';
+        visuTitle.textContent = title;
+        
+        drawCanvas(p, type, podest);
+    }
+
+    function drawCanvas(p, type, podest) {
+        const w = 500, h = 280;
+        canvas.width = w; canvas.height = h;
+        ctx.clearRect(0, 0, w, h);
+        const margin = { left: 60, right: 30, top: 25, bottom: 40 };
+        const plotW = w - margin.left - margin.right;
+        const plotH = h - margin.top - margin.bottom;
+        
+        if (type === 'gerade' || type === 'podest' || type === 'dachboden') {
+            const scaleX = plotW / p.laufLength;
+            const totalRise = p.rise * p.steps;
+            const scaleY = plotH / totalRise;
+            let x = margin.left, y = margin.top + plotH;
+            ctx.fillStyle = '#e5cdb5';
+            ctx.strokeStyle = '#7a5e4a';
+            ctx.lineWidth = 1.5;
+            
+            for (let i=0; i<p.steps; i++) {
+                let stepW;
+                if (i === 0 && p.podestUsed) {
+                    stepW = podest * scaleX;
+                } else {
+                    stepW = p.run * scaleX;
+                }
+                const stepH = p.rise * scaleY;
+                ctx.fillRect(x, y - stepH, stepW, stepH);
+                ctx.strokeRect(x, y - stepH, stepW, stepH);
+                if (i < p.steps-1) {
+                    ctx.beginPath();
+                    ctx.moveTo(x + stepW, y - stepH);
+                    ctx.lineTo(x + stepW, y);
+                    ctx.stroke();
+                }
+                ctx.fillStyle = '#2c241e';
+                ctx.font = 'bold 10px system-ui';
+                ctx.fillText(`${i+1}`, x+4, y - stepH/2 + 4);
+                x += stepW;
+                y -= stepH;
+                ctx.fillStyle = '#e5cdb5';
+            }
+            ctx.beginPath();
+            ctx.strokeStyle = '#6f4e37';
+            ctx.lineWidth = 3;
+            ctx.moveTo(margin.left, margin.top + plotH);
+            ctx.lineTo(margin.left + p.laufLength * scaleX, margin.top + plotH - totalRise * scaleY);
+            ctx.stroke();
+            ctx.fillStyle = '#3f332a';
+            ctx.font = '11px system-ui';
+            ctx.fillText(`Höhe ${totalRise.toFixed(0)} cm`, margin.left-10, margin.top-5);
+            ctx.fillText(`Lauflänge ${p.laufLength} cm`, margin.left + p.laufLength*scaleX/2-30, h-10);
+        } else {
+            ctx.fillStyle = '#d9c4b0';
+            ctx.fillRect(margin.left, margin.top, plotW, plotH);
+            ctx.strokeStyle = '#6f4e37';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(margin.left, margin.top, plotW, plotH);
+            ctx.font = 'bold 14px system-ui';
+            ctx.fillStyle = '#3b2e26';
+            ctx.textAlign = 'center';
+            if (type === 'viertel') {
+                ctx.fillText('↗ 90° Wendelung', w/2, h/2);
+                ctx.fillText('Draufsicht (schematisch)', w/2, h/2+25);
+            } else {
+                ctx.fillText('↻ 180° Wendelung', w/2, h/2);
+                ctx.fillText('Draufsicht (schematisch)', w/2, h/2+25);
+            }
+            ctx.textAlign = 'left';
+            ctx.font = '11px system-ui';
+            ctx.fillText(`Lauflänge ${p.laufLength} cm`, margin.left+10, margin.top+plotH-10);
+        }
+    }
+
+    function computeIdealLength(h) {
+        const idealRise = 17.0, idealRun = 29.0;
+        let n = Math.round(h / idealRise);
+        n = Math.max(3, n);
+        return (n-1) * idealRun;
+    }
+
+    // Event Listener
+    heightSlider.addEventListener('input', renderAll);
+    distanceSlider.addEventListener('input', renderAll);
+    typeSelect.addEventListener('change', renderAll);
+    podestSlider.addEventListener('input', renderAll);
+    breiteSlider.addEventListener('input', renderAll);
+    gebaeudeSelect.addEventListener('change', renderAll);
+    
+    applyBtn.onclick = () => {
+        const h = parseFloat(heightSlider.value);
+        distanceSlider.value = Math.round(computeIdealLength(h));
+        renderAll();
+    };
+    
+    renderAll();
+})();
+</script>
+</body>
+</html>
