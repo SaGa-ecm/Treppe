@@ -13,10 +13,10 @@
 </head>
 <body>
 <div class="card">
-    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+    <!-- Header mit flex-wrap für Mobile -->
+    <div class="header-container" style="display: flex; align-items: center; margin-bottom: 10px;">
         <h1 style="margin-bottom: 0;">Treppenplaner · kostenlos - spendenbasiert</h1>
         <div class="header-actions">
-            <a href="glossar.html" target="_blank" style="text-decoration: none; color: var(--text-primary); margin-right: 12px; font-size: 0.95rem; font-weight: 500;">Fachbegriffe erklärt</a>
             <button class="theme-toggle" id="themeToggle" title="Hell-/Dunkelmodus">
                 <span id="themeIcon">🌙</span>
                 <span id="themeText">Dunkel</span>
@@ -30,11 +30,17 @@
         </span>
     </div>
     
-    <!-- Kurze Einführung für bessere Verständlichkeit -->
+    <!-- Einführung mit Tooltip-Demo -->
     <div style="background: var(--badge-bg); border-radius: 16px; padding: 12px 16px; margin-bottom: 20px; color: var(--text-primary);">
         <strong>So funktioniert's:</strong> Geben Sie Geschosshöhe und verfügbaren Platz ein. 
-        Das Tool findet automatisch eine normgerechte Treppe. Über die <span class="has-tooltip" style="border-bottom: 1px dashed;">Tooltips <span class="tooltip-text">Fahren Sie mit der Maus über unterstrichene Begriffe oder Symbole, um Erklärungen zu erhalten.</span></span> 
-        erhalten Sie zu jedem Fachbegriff eine kurze Erläuterung.
+        Das Tool findet automatisch eine normgerechte Treppe. 
+        <span class="has-tooltip" style="border-bottom: 1px dashed;">Unterstrichene Begriffe<span class="tooltip-text">Genau wie dieser Text: Einfach mit der Maus darüberfahren oder auf Touch‑Geräten antippen.</span></span> 
+        enthalten kurze Erläuterungen.
+    </div>
+
+    <!-- Prominenter Glossar-Button (mittig) -->
+    <div style="margin: 16px 0 8px; text-align: center;">
+        <a href="glossar.html" target="_blank" class="glossar-button">Alle Fachbegriffe im Glossar nachschlagen</a>
     </div>
 
     <div class="grid-2">
@@ -313,7 +319,6 @@
                     Materialliste & Zuschnittmaße (ausklappen)
                 </summary>
                 <div id="materialListeContainer" style="margin-top: 16px; overflow-x: auto;">
-                    <!-- Wird dynamisch durch JavaScript gefüllt -->
                     <p style="color: var(--text-secondary);">Berechnung läuft…</p>
                 </div>
                 <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 12px; border-top: 1px dashed var(--border-medium); padding-top: 10px;">
@@ -339,8 +344,14 @@
                 </p>
             </div>
             
+            <!-- Footer mit Copyright, Lizenz und Glossar-Link -->
             <div class="footnote">
-                Live‑Berechnung · Ampelsystem · Manuelle Stufen
+                Live‑Berechnung · Ampelsystem · Manuelle Stufen · 
+                <a href="glossar.html" target="_blank" style="color: var(--text-secondary);">Glossar</a>
+                <br>
+                © Benjamin Everts, Bielefeld, Germany · 
+                <a href="LICENSE.txt" target="_blank" style="color: var(--text-secondary);">Proprietäre Lizenz</a> – 
+                Kommerzielle Nutzung und Veränderung nur mit Zustimmung
             </div>
         </div>
     </div>

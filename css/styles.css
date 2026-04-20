@@ -105,6 +105,7 @@ h1 {
     }
     body { padding: 10px; }
     .card { padding: 18px 14px; }
+    h1 { font-size: 1.6rem; }
 }
 .panel {
     background: var(--bg-panel);
@@ -329,7 +330,7 @@ button {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-left: auto;
+    margin-left: 0; /* bei Umbruch bündig */
 }
 .theme-toggle {
     background: var(--badge-bg);
@@ -417,4 +418,40 @@ input[type=number] {
     font-size: 0.75rem;
     color: var(--text-secondary);
     margin-top: 8px;
+}
+
+/* === Header-Container für Mobile Umbruch === */
+.header-container {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* === Glossar-Link als Button mit Link-Charakter === */
+.glossar-button {
+    display: inline-block;
+    background: var(--accent);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 40px;
+    text-decoration: none;
+    font-weight: 600;
+    text-align: center;
+    border: 1px solid transparent;
+    transition: background var(--transition-speed);
+}
+.glossar-button:hover {
+    background: var(--accent-dark);
+    text-decoration: underline;
+}
+@media (max-width: 750px) {
+    .glossar-button {
+        width: 100%;
+    }
+}
+
+/* === Verbesserte Touch-Bedienung === */
+button, select, input[type=range] {
+    touch-action: manipulation;
 }
