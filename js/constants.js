@@ -34,14 +34,21 @@ export const MINDESTLAST_PUBLIC = 500;
 // Stufendicke (Empfehlung Basis)
 export const EMPFOHLENE_DICKE = 50;      // mm
 
-// === Materialdatenbank (erweitert für CR FEAT‑007) ===
+// === Materialdatenbank (erweitert) ===
 // Dichte in kg/m³, minDicke in mm, factor für Optimierung (>1 = schwerer → flachere Treppe bevorzugt)
 export const MATERIAL_DB = {
     eiche:   { name: 'Eiche/Buche', dichte: 700, minDicke: 40, factor: 1.0 },
     fichte:  { name: 'Fichte/Kiefer', dichte: 500, minDicke: 50, factor: 0.9 },
     leimholz:{ name: 'Leimholz', dichte: 600, minDicke: 45, factor: 0.95 },
-    stahl:   { name: 'Stahl', dichte: 7850, minDicke: 10, factor: 2.0 }, // Stahl sehr schwer, daher starker Flachheitsbonus
-    beton:   { name: 'Stahlbeton', dichte: 2500, minDicke: 80, factor: 1.5 }
+    stahl:   { name: 'Stahl', dichte: 7850, minDicke: 10, factor: 2.0 },
+    beton:   { name: 'Stahlbeton', dichte: 2500, minDicke: 80, factor: 1.5 },
+    bambus:  { name: 'Bambus', dichte: 650, minDicke: 40, factor: 0.9 },
+    hpl:     { name: 'HPL (Schichtpressstoff)', dichte: 1450, minDicke: 12, factor: 1.0 },
+    aluminium:{ name: 'Aluminium', dichte: 2700, minDicke: 8, factor: 1.3 },
+    carbon:  { name: 'Carbon (CFK)', dichte: 1600, minDicke: 5, factor: 1.5 },
+    granit:  { name: 'Granit', dichte: 2800, minDicke: 30, factor: 1.8 },
+    marmor:  { name: 'Marmor', dichte: 2700, minDicke: 30, factor: 1.7 },
+    schiefer:{ name: 'Schiefer', dichte: 2700, minDicke: 25, factor: 1.6 }
 };
 
 // === Befestigungs-Prüfungen (Hilfsfunktionen in calculator.js) ===
