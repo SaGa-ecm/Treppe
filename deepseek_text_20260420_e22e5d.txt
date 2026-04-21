@@ -1,16 +1,1 @@
-Proprietäre Lizenz
 
-Copyright (c) 2026 Benjamin Everts, Bielefeld, Germany
-
-Alle Rechte vorbehalten.
-
-Die Nutzung dieser Software ist ausschließlich für private, nicht‑kommerzielle Zwecke gestattet. Jede darüber hinausgehende Nutzung, insbesondere:
-- die Veränderung, Bearbeitung oder Erstellung abgeleiteter Werke,
-- die Vervielfältigung und Verbreitung,
-- die kommerzielle Nutzung (einschließlich Verkauf, Vermietung, Einbindung in kommerzielle Produkte oder Dienstleistungen),
-
-bedarf der vorherigen schriftlichen Zustimmung des Urhebers.
-
-DIE SOFTWARE WIRD OHNE MÄNGELGEWÄHR UND OHNE JEGLICHE HAFTUNG BEREITGESTELLT. DER URHEBER ÜBERNIMMT KEINERLEI GEWÄHRLEISTUNG FÜR DIE FUNKTIONSFÄHIGKEIT ODER DIE EIGNUNG FÜR EINEN BESTIMMTEN ZWECK.
-
-Für Lizenzanfragen: sagaporsche45@gmail.com
