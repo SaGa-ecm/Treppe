@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Treppenplaner · Bauteilliste</title>
+    <title>Treppenplaner · Stückliste und Bauplan</title>
     <style>
         * {
             box-sizing: border-box;
@@ -39,66 +39,79 @@
             padding-left: 16px;
             font-weight: 400;
         }
-        .summary {
-            background: #f1ebe6;
-            border-radius: 20px;
-            padding: 18px 20px;
-            margin-bottom: 30px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 24px 40px;
+        h2 {
+            font-size: 1.4rem;
+            margin: 30px 0 15px 0;
+            color: #4a3a2a;
+            border-bottom: 2px solid #b08968;
+            padding-bottom: 6px;
+        }
+        h3 {
+            font-size: 1.2rem;
+            margin: 20px 0 10px 0;
+            color: #5a4a3e;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .info-card {
+            background: #fdfaf7;
             border: 1px solid #ddd2c8;
-        }
-        .summary-item {
-            display: flex;
-            flex-direction: column;
-        }
-        .summary-label {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            color: #6b5a4e;
-        }
-        .summary-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #2e241e;
-        }
-        .summary-unit {
-            font-size: 0.9rem;
-            font-weight: 400;
-            color: #6b5a4e;
-            margin-left: 4px;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 20px;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
-            font-size: 0.95rem;
+            margin: 15px 0;
+            font-size: 0.9rem;
         }
         th {
             text-align: left;
-            padding: 12px 8px;
+            padding: 10px 8px;
+            background: #f1ebe6;
             border-bottom: 2px solid #b08968;
             font-weight: 600;
-            color: #2e241e;
-            background: #fdfaf7;
         }
         td {
-            padding: 10px 8px;
+            padding: 8px;
             border-bottom: 1px solid #e6dfd7;
         }
         .amount {
             text-align: right;
             font-weight: 600;
         }
+        .warning-box {
+            background: #fff0e0;
+            border-left: 6px solid #c06b2e;
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        .success-box {
+            background: #e7f0e9;
+            border-left: 6px solid #3c6e4a;
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        .norm-reference {
+            font-size: 0.8rem;
+            color: #6b5a4e;
+            margin-top: 8px;
+            font-style: italic;
+        }
         .footer-note {
             margin-top: 30px;
             padding: 16px;
-            background: #fff3e6;
+            background: #f1ebe6;
             border-radius: 16px;
-            border-left: 4px solid #b08968;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            text-align: center;
         }
         .print-btn {
             background: #2e241e;
@@ -110,82 +123,59 @@
             font-size: 1rem;
             cursor: pointer;
             margin-bottom: 20px;
-            border: 1px solid #ddd2c8;
         }
         .print-btn:hover {
             background: #4a3a2a;
         }
         @media print {
             body {
-                background: white !important;
-                padding: 0.5cm;
-                color: black !important;
+                background: white;
+                padding: 0;
             }
             .container {
                 box-shadow: none;
                 padding: 0;
-                background: white !important;
+                max-width: 100%;
             }
             .print-btn {
                 display: none;
             }
-            .summary {
-                background: white !important;
-                border: 1px solid black !important;
-                color: black !important;
+            .warning-box, .success-box {
+                break-inside: avoid;
             }
-            .summary-label, .summary-value, .summary-unit {
-                color: black !important;
+            h2, h3 {
+                break-after: avoid;
             }
-            th {
-                background: #eee !important;
-                border-bottom-color: black !important;
-                color: black !important;
-            }
-            td {
-                border-bottom-color: #999 !important;
-                color: black !important;
-            }
-            .footer-note {
-                background: white !important;
-                border-left-color: black !important;
-                color: black !important;
-            }
-            h1, .subtitle, h2 {
-                color: black !important;
+            table {
+                break-inside: avoid;
             }
         }
-        .no-data {
-            color: #b55a2b;
-            font-weight: 500;
-            text-align: center;
-            padding: 30px;
+        .step-table td:first-child {
+            font-weight: 600;
+        }
+        .badge {
+            display: inline-block;
+            background: #b08968;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            margin-left: 10px;
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <button class="print-btn" onclick="window.print()">🖨️ Jetzt drucken</button>
-    <h1>🪵 Treppenplaner · Bauteilliste</h1>
-    <div class="subtitle">Materialbedarf und Zuschnittmaße (alle Angaben in cm, sofern nicht anders)</div>
-    
-    <div id="summaryContainer" class="summary">
-        <!-- Dynamisch gefüllt -->
+    <button class="print-btn" onclick="window.print()">🖨️ Drucken / PDF speichern</button>
+    <h1>📐 Stückliste und Bauplan</h1>
+    <div class="subtitle">Treppenplaner · DIN 18065 & Eurocode 1 · Maßangaben in cm, sofern nicht anders</div>
+
+    <div id="content">
+        <p style="text-align: center; padding: 40px;">Lade Daten ...</p>
     </div>
-    
-    <h2 style="margin: 24px 0 8px; font-size: 1.5rem;">📋 Übersicht Hauptbauteile</h2>
-    <div id="overviewTableContainer">
-        <!-- Übersichtstabelle -->
-    </div>
-    
-    <h2 style="margin: 32px 0 8px; font-size: 1.5rem;">🔧 Detaillierte Stückliste (BOM)</h2>
-    <div id="bomTableContainer">
-        <!-- BOM-Tabelle -->
-    </div>
-    
+
     <div class="footer-note">
-        <strong>⚠️ Hinweis:</strong> Diese Liste ist eine Planungshilfe. Verschnitt, Toleranzen und statische Erfordernisse sind eigenverantwortlich zu berücksichtigen. 
-        Alle Maße wurden nach bestem Wissen gemäß DIN 18065 und Eurocode 1 ermittelt.
+        <strong>⚠️ Wichtiger Hinweis:</strong> Diese Unterlage dient als Planungshilfe. Die statische Tragfähigkeit sowie die Einhaltung aller bauordnungsrechtlichen Vorschriften müssen von einem Fachplaner geprüft werden. Alle Maße sind Nennmaße ohne Berücksichtigung von Toleranzen oder Verschnitt.
     </div>
 </div>
 
@@ -193,72 +183,106 @@
     (function() {
         const dataStr = localStorage.getItem('treppeData');
         if (!dataStr) {
-            document.getElementById('overviewTableContainer').innerHTML = '<p class="no-data">Keine Daten vorhanden. Bitte zuerst im Treppenplaner eine Berechnung durchführen.</p>';
+            document.getElementById('content').innerHTML = '<div class="warning-box">❌ Keine Daten vorhanden. Bitte zuerst im Treppenplaner eine Berechnung durchführen und speichern.</div>';
             return;
         }
-        
+
         try {
             const data = JSON.parse(dataStr);
-            
-            // Zusammenfassung (Werte formatieren)
-            const heightFormatted = typeof data.height === 'number' ? data.height.toFixed(1) : data.height;
-            const laufLengthFormatted = typeof data.laufLength === 'number' ? data.laufLength.toFixed(1) : data.laufLength;
-            
-            const summaryHtml = `
-                <div class="summary-item">
-                    <span class="summary-label">Geschosshöhe</span>
-                    <span class="summary-value">${heightFormatted}<span class="summary-unit">cm</span></span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">Lauflänge</span>
-                    <span class="summary-value">${laufLengthFormatted}<span class="summary-unit">cm</span></span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">Steigung / Auftritt</span>
-                    <span class="summary-value">${data.rise} / ${data.run}<span class="summary-unit">cm</span></span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">Stufen</span>
-                    <span class="summary-value">${data.steps}<span class="summary-unit"></span></span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">Winkel</span>
-                    <span class="summary-value">${data.angle}<span class="summary-unit">°</span></span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">Laufbreite</span>
-                    <span class="summary-value">${data.breite}<span class="summary-unit">cm</span></span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">Material</span>
-                    <span class="summary-value">${data.materialName}<span class="summary-unit"></span></span>
+
+            // Hilfsfunktion für Formatierung
+            const formatNumber = (val, digits = 1) => typeof val === 'number' ? val.toFixed(digits) : val;
+
+            // 1. Allgemeine Projektdaten
+            let html = `
+                <div class="info-card">
+                    <h2>📋 1. Allgemeine Projektdaten</h2>
+                    <div class="grid-2">
+                        <div><strong>Planer / Name:</strong> ${data.userName || '—'}</div>
+                        <div><strong>Projekt / Treppe:</strong> ${data.stairName || '—'}</div>
+                        <div><strong>Erstellt am:</strong> ${new Date().toLocaleDateString('de-DE')}</div>
+                        <div><strong>Treppenform:</strong> ${getStairTypeName(data.stairType)}</div>
+                        <div><strong>Befestigungsart:</strong> ${getBefestigungName(data.befestigung)}</div>
+                        <div><strong>Gebäudetyp:</strong> ${data.gebaeudeTyp === 'wohn' ? 'Wohngebäude (EFH, bis 2 WE)' : 'Öffentliches Gebäude / Mehrfamilienhaus'}</div>
+                        <div><strong>Material:</strong> ${data.materialName || data.materialKey}${data.stufenDicke ? ` (Stufendicke: ${data.stufenDicke} mm)` : ''}</div>
+                        <div><strong>Nutzbare Laufbreite:</strong> ${data.breite} cm</div>
+                        <div><strong>Gewünschte Nutzlast:</strong> ${data.nutzlast} kg/m²</div>
+                    </div>
                 </div>
             `;
-            document.getElementById('summaryContainer').innerHTML = summaryHtml;
-            
-            // Übersichtstabelle (wie bisher, aber mit Überschrift)
-            let overviewHtml = `<table>
-                <thead><tr><th>Position</th><th>Menge</th><th>Material</th><th>Maße (L×B×D)</th><th>Hinweis</th></tr></thead><tbody>`;
-            
-            data.positionen.forEach(pos => {
-                overviewHtml += `<tr>
-                    <td>${pos.pos}</td>
-                    <td class="amount">${pos.menge}</td>
-                    <td>${pos.material}</td>
-                    <td>${pos.laenge} × ${pos.breite} × ${pos.dicke}</td>
-                    <td>${pos.hinweis}</td>
-                </tr>`;
-            });
-            overviewHtml += `</tbody></table>`;
-            document.getElementById('overviewTableContainer').innerHTML = overviewHtml;
-            
-            // Detaillierte BOM-Tabelle
+
+            // 2. Geometrische Daten
+            html += `
+                <h2>📐 2. Geometrische Daten</h2>
+                <table class="geo-table">
+                    <thead><tr><th>Parameter</th><th>Wert</th><th>Norm / Hinweis</th></tr></thead>
+                    <tbody>
+                        <tr><td>Geschosshöhe</td><td><strong>${data.height} cm</strong></td><td>von OKFF unten bis OKFF oben</td></tr>
+                        <tr><td>Lauflänge (verfügbar)</td><td><strong>${data.laufLength} cm</strong></td><td>horizontaler Platzbedarf</td></tr>
+                        <tr><td>Steigung (s)</td><td><strong>${data.rise} cm</strong></td><td>${data.isAttic ? 'Dachboden: 18–26 cm' : 'Norm: 14–19 cm'}</td></tr>
+                        <tr><td>Auftritt (a)</td><td><strong>${data.run} cm</strong></td><td>${data.isAttic ? '≥15 cm' : '≥24 cm (notwendige Treppe)'}</td></tr>
+                        <tr><td>Stufenanzahl</td><td><strong>${data.steps}</strong></td><td>inkl. Austrittstufe</td></tr>
+                        <tr><td>Steigungswinkel</td><td><strong>${data.angle}°</strong></td><td>bequem: 25–35°, steil >35°</td></tr>
+                        <tr><td>Schrittmaß (2s+a)</td><td><strong>${data.schrittmass} cm</strong></td><td>Sollbereich: 59–65 cm</td></tr>
+                        <tr><td>Wangenlänge (ca.)</td><td><strong>${data.wangenLaenge} cm</strong></td><td>Schrägmaß für Wangen</td></tr>
+                        ${data.podestTiefe ? `<tr><td>Podesttiefe</td><td><strong>${data.podestTiefe} cm</strong></td><td>Mindesttiefe 80 cm</td></tr>` : ''}
+                    </tbody>
+                </table>
+            `;
+
+            // 3. Konstruktionsdetails & Normprüfung
+            const isValid = data.isValid;
+            const warnings = data.warnings || '';
+            html += `
+                <h2>🔧 3. Konstruktionsdetails & Normprüfung</h2>
+                <div class="${isValid ? 'success-box' : 'warning-box'}">
+                    <strong>${isValid ? '✅ Normkonform' : '⚠️ Nicht vollständig normkonform'}</strong><br>
+                    ${warnings ? `<span>${warnings}</span>` : '<span>Alle eingegebenen Werte entsprechen den Normvorgaben (DIN 18065 / Eurocode 1).</span>'}
+                </div>
+                <div class="grid-2">
+                    <div><strong>Laufbreite:</strong> ${data.breite} cm – ${data.breite >= (data.gebaeudeTyp === 'wohn' ? 80 : 100) ? '✅ ausreichend' : '❌ zu gering'}</div>
+                    <div><strong>Nutzlast:</strong> ${data.nutzlast} kg/m² – ${data.nutzlast >= (data.gebaeudeTyp === 'wohn' ? 300 : 500) ? '✅ normgerecht' : '❌ unterschreitet Mindestwert'}</div>
+                    <div><strong>Stufendicke:</strong> ${data.stufenDicke} mm – ${checkStufenDicke(data)}</div>
+                    <div><strong>Befestigung:</strong> ${getBefestigungName(data.befestigung)} – ${getBefestigungStatus(data)}</div>
+                </div>
+            `;
+
+            // 4. Stufenschema
+            html += `<h2>📏 4. Stufenschema (Höhen & Auftritte)</h2>`;
+            if (data.stufenDetails && data.stufenDetails.length > 0) {
+                html += `<table class="step-table"><thead><tr><th>Stufe</th><th>Höhe (OKFF)</th><th>Auftritt / Hinweis</th></tr></thead><tbody>`;
+                data.stufenDetails.forEach(step => {
+                    html += `<tr><td>${step.stufe}</td><td>${step.hoehe} cm</td><td>${step.auftritt}</td></tr>`;
+                });
+                html += `</tbody></table>`;
+            } else {
+                html += `<p>Keine Stufendetails verfügbar.</p>`;
+            }
+
+            // 5. Materialliste & Zuschnitte
+            html += `<h2>🧱 5. Materialliste & Zuschnitte</h2>`;
+            if (data.positionen && data.positionen.length > 0) {
+                html += `<table><thead><tr><th>Pos.</th><th>Menge</th><th>Material</th><th>Maße (L × B × D)</th><th>Hinweis</th></tr></thead><tbody>`;
+                data.positionen.forEach(pos => {
+                    html += `<tr>
+                        <td>${pos.pos}</td>
+                        <td class="amount">${pos.menge}</td>
+                        <td>${pos.material}</td>
+                        <td>${pos.laenge} × ${pos.breite} × ${pos.dicke}</td>
+                        <td>${pos.hinweis || '—'}</td>
+                    </tr>`;
+                });
+                html += `</tbody></table>`;
+            } else {
+                html += `<p>Keine Materialliste vorhanden.</p>`;
+            }
+
+            // 6. Detaillierte Verbindungsmittel (BOM)
+            html += `<h2>🔩 6. Detaillierte Verbindungsmittel</h2>`;
             if (data.bomDetails && data.bomDetails.length > 0) {
-                let bomHtml = `<table>
-                    <thead><tr><th>Teil</th><th>Anzahl</th><th>Material / Typ</th><th>Abmessungen / Spezifikation</th><th>Verwendung</th></tr></thead><tbody>`;
-                
+                html += `<table><thead><tr><th>Teil</th><th>Anzahl</th><th>Typ / Material</th><th>Abmessung</th><th>Hinweis</th></tr></thead><tbody>`;
                 data.bomDetails.forEach(item => {
-                    bomHtml += `<tr>
+                    html += `<tr>
                         <td>${item.bezeichnung}</td>
                         <td class="amount">${item.menge}</td>
                         <td>${item.typ}</td>
@@ -266,16 +290,71 @@
                         <td>${item.hinweis || '—'}</td>
                     </tr>`;
                 });
-                bomHtml += `</tbody></table>`;
-                document.getElementById('bomTableContainer').innerHTML = bomHtml;
+                html += `</tbody></table>`;
             } else {
-                document.getElementById('bomTableContainer').innerHTML = '<p>Keine detaillierten Verbindungsmittel verfügbar.</p>';
+                html += `<p>Keine Verbindungsmittel gelistet.</p>`;
             }
-            
+
+            // 7. Normen & Quellen
+            html += `
+                <h2>📚 7. Angewandte Normen & Quellen</h2>
+                <ul style="margin-left: 20px; line-height: 1.6;">
+                    <li>DIN 18065:2023-06 – Gebäudetreppen – Maße, Begriffe, Anforderungen</li>
+                    <li>DIN EN 1991-1-1 (Eurocode 1) – Einwirkungen auf Tragwerke – Wichten, Eigengewicht, Nutzlasten</li>
+                    <li>Fachregeln des Treppenbaus (Z2) – für Befestigungsarten und konstruktive Details</li>
+                </ul>
+                <div class="norm-reference">Hinweis: Die angegebenen Lasten und Maße sind Planungswerte. Ein statischer Nachweis durch einen Fachplaner ist erforderlich.</div>
+            `;
+
+            document.getElementById('content').innerHTML = html;
+
         } catch(e) {
-            document.getElementById('overviewTableContainer').innerHTML = '<p class="no-data">Fehler beim Laden der Daten.</p>';
+            console.error(e);
+            document.getElementById('content').innerHTML = '<div class="warning-box">Fehler beim Laden der Daten. Bitte aktualisieren Sie die Seite und führen Sie eine neue Berechnung durch.</div>';
         }
     })();
+
+    // Hilfsfunktionen für lesbare Texte
+    function getStairTypeName(type) {
+        const types = {
+            'gerade': 'Gerade Treppe',
+            'viertel': 'Viertelgewendelt (90°)',
+            'halb': 'Halbgewendelt (180°)',
+            'podest': 'Podesttreppe',
+            'dachboden': 'Dachbodentreppe (Raumspar)'
+        };
+        return types[type] || type;
+    }
+
+    function getBefestigungName(bef) {
+        const map = {
+            'wange': 'Wangenkonstruktion (seitlich oder mittig)',
+            'bolzen': 'Bolzentreppe (wandseitig)',
+            'kragarm': 'Kragarmtreppe (freitragend)'
+        };
+        return map[bef] || bef;
+    }
+
+    function getBefestigungStatus(data) {
+        const bef = data.befestigung;
+        if (bef === 'bolzen' && data.breite > 150) return '⚠️ Maximale Breite 150 cm empfohlen';
+        if (bef === 'kragarm' && data.laufLength > 400) return '⚠️ Maximale Lauflänge 400 cm empfohlen';
+        if (bef === 'kragarm' && data.podestTiefe) return '❌ Podest bei Kragarm unzulässig';
+        return '✅ Konstruktiv zulässig';
+    }
+
+    function checkStufenDicke(data) {
+        const material = data.materialKey;
+        const dicke = data.stufenDicke;
+        const minDicken = {
+            'eiche': 40, 'buche': 40, 'fichte': 50, 'kiefer': 50, 'leimholz': 45,
+            'stahl': 10, 'beton': 80, 'bambus': 40, 'hpl': 12, 'aluminium': 8,
+            'carbon': 5, 'granit': 30, 'marmor': 30, 'schiefer': 25
+        };
+        const min = minDicken[material] || 40;
+        if (dicke >= min) return `✅ ausreichend (≥${min} mm)`;
+        return `❌ zu dünn (min. ${min} mm empfohlen)`;
+    }
 </script>
 </body>
 </html>

@@ -1,18 +1,20 @@
-// === Hauptanwendung – Einstiegspunkt (v2.0 mit High-DPI & PDF) ===
+// === main.js – Hauptanwendung (v3.1 mit erweiterter Druckansicht) ===
+// Änderungen gemäß CR: Erweiterter localStorage-Eintrag für print.html (Stückliste + Bauplan)
+
 import { syncSliderInput, initTheme, updateToggleIcon, getMindestbreite, getLasten, getMindestlast } from './ui.js';
 import { 
     calculateAuto, calculateManual, computeIdealLength, 
     validateBefestigung, computeWangenLaenge, generateBOM, generateMaterialListe 
 } from './calculator.js';
-import { drawCanvas } from './drawing.js'; // Achtung: Signatur geändert!
-import { generatePDF } from './pdf-export.js'; // Neu: PDF Export
+import { drawCanvas } from './drawing.js';
+import { generatePDF } from './pdf-export.js';
 import { 
     EMPFOHLENE_DICKE, MATERIAL_DB,
     MIN_SCHRITTMASS, MAX_SCHRITTMASS, MAX_RISE, MIN_RUN,
     ATTIC_MIN_RUN, ATTIC_MAX_RISE
 } from './constants.js';
 
-// === DOM-Elemente (einmalig abrufen) ===
+// ========== 1. DOM-Elemente ==========
 const heightSlider = document.getElementById('heightSlider');
 const heightInput = document.getElementById('heightInput');
 const distanceSlider = document.getElementById('distanceSlider');
@@ -38,8 +40,6 @@ const adviceText = document.getElementById('adviceText');
 const visuTitle = document.getElementById('visuTitle');
 const stepDetailHint = document.getElementById('stepDetailHint');
 const canvas = document.getElementById('stairCanvas');
-// Kontext wird jetzt direkt in drawCanvas geholt, aber wir behalten die Ref falls nötig
-// const ctx = canvas.getContext('2d'); 
 const applyBtn = document.getElementById('applyRecommendedBtn');
 
 const breiteSlider = document.getElementById('breiteSlider');
@@ -64,28 +64,25 @@ const dickeDisplay = document.getElementById('dickeDisplay');
 const dickenStatus = document.getElementById('dickenStatus');
 const resetAutoBtn = document.getElementById('resetAutoBtn');
 
-// Neue UI-Elemente für Material, Befestigung, Wangenlänge, Materialliste
 const materialSelect = document.getElementById('materialSelect');
 const befestigungSelect = document.getElementById('befestigungSelect');
 const wangenLaengeSpan = document.getElementById('wangenLaenge');
 const befestigungStatus = document.getElementById('befestigungStatus');
 const materialListeContainer = document.getElementById('materialListeContainer');
 const printViewBtn = document.getElementById('printViewBtn');
-const pdfExportBtn = document.getElementById('pdfExportBtn'); // Neu
+const pdfExportBtn = document.getElementById('pdfExportBtn');
 
-// Neue Inputs für PDF
 const userNameInput = document.getElementById('userNameInput');
 const stairNameInput = document.getElementById('stairNameInput');
 
-// Floating Theme Toggle
 const themeToggleFloat = document.getElementById('themeToggleFloat');
 const themeIconFloat = document.getElementById('themeIconFloat');
 
-// === State ===
+// ========== 2. State ==========
 let manuellerModus = false;
-let currentCalculationData = null; // Speichert aktuelle Daten für PDF Export
+let currentCalculationData = null; // Speichert aktuelle Daten für PDF & Druckansicht
 
-// === Darkmode initialisieren ===
+// ========== 3. Darkmode Initialisierung ==========
 const currentTheme = initTheme();
 const updateThemeUI = () => {
     const theme = document.documentElement.getAttribute('data-theme') || 'light';
@@ -101,13 +98,13 @@ themeToggleFloat.addEventListener('click', () => {
     updateThemeUI();
 });
 
-// === Hilfsfunktion: Material-spezifische Mindestdicke ===
+// ========== 4. Hilfsfunktion: Material-spezifische Mindestdicke ==========
 function getMinDickeFromMaterial(materialKey) {
     const mat = MATERIAL_DB[materialKey] || MATERIAL_DB.eiche;
     return mat.minDicke;
 }
 
-// === Rendern der gesamten UI ===
+// ========== 5. Haupt-Rendering-Funktion (renderAll) ==========
 function renderAll() {
     try {
         const height = parseFloat(heightSlider.value);
@@ -121,7 +118,7 @@ function renderAll() {
         const materialKey = materialSelect.value;
         const befestigung = befestigungSelect.value;
         
-        // Basis-Displays aktualisieren
+        // Displays aktualisieren
         heightDisplay.textContent = height + ' cm';
         distanceDisplay.textContent = distance + ' cm';
         podestDisplay.textContent = podest + ' cm';
@@ -130,7 +127,7 @@ function renderAll() {
         dickeDisplay.textContent = dicke + ' mm';
         podestGroup.style.display = (type === 'podest') ? 'block' : 'none';
         
-        // === Berechnung (Auto / Manuell) ===
+        // Berechnung (Auto / Manuell)
         let p;
         if (manuellerModus) {
             const manSteigung = parseFloat(steigungSlider.value);
@@ -148,13 +145,13 @@ function renderAll() {
             auftrittDisplay.textContent = p.run.toFixed(1) + ' cm';
         }
         
-        // Manuelle Slider aktiv/inaktiv schalten
+        // Manuelle Slider aktiv/inaktiv
         auftrittSlider.classList.toggle('inactive-slider', !manuellerModus);
         auftrittInput.classList.toggle('inactive-slider', !manuellerModus);
         steigungSlider.classList.toggle('inactive-slider', !manuellerModus);
         steigungInput.classList.toggle('inactive-slider', !manuellerModus);
         
-        // === Statistiken füllen ===
+        // Statistik füllen
         stepsCount.textContent = p.steps;
         riseValue.textContent = p.rise.toFixed(1);
         runValue.textContent = p.run.toFixed(1);
@@ -165,11 +162,11 @@ function renderAll() {
         laufLengthDisplay.textContent = berechneteLauflaenge.toFixed(0) + ' cm';
         const passtInPlatz = berechneteLauflaenge <= distance;
         
-        // === Wangenlänge berechnen ===
+        // Wangenlänge
         const wangenLaenge = computeWangenLaenge(height, berechneteLauflaenge);
         wangenLaengeSpan.textContent = `${wangenLaenge.toFixed(0)} cm (≈ ${(wangenLaenge/100).toFixed(2)} m)`;
         
-        // === Prüfungen ===
+        // Prüfungen
         const mindestbreite = getMindestbreite(gebaeude);
         const breiteOk = breite >= mindestbreite;
         breitenStatus.textContent = breiteOk ? `konform (≥${mindestbreite} cm)` : `zu schmal (<${mindestbreite} cm)`;
@@ -188,7 +185,6 @@ function renderAll() {
         dickenStatus.textContent = dickeOk ? `${dicke} mm (≥${minDickeMaterial} mm für ${MATERIAL_DB[materialKey].name})` : `${dicke} mm (zu dünn, empfohlen ≥${minDickeMaterial} mm)`;
         dickenStatus.style.color = dickeOk ? '#2e7d32' : '#b55a2b';
         
-        // Befestigungsprüfung
         const befValid = validateBefestigung(befestigung, breite, p.podestUsed, berechneteLauflaenge);
         befestigungStatus.textContent = befValid.message;
         befestigungStatus.style.color = befValid.ok ? '#2e7d32' : '#b55a2b';
@@ -235,21 +231,27 @@ function renderAll() {
         if (!befValid.ok) advice += ' ⚠️ ' + befValid.message;
         adviceText.textContent = '📌 ' + advice;
         
-        // Stufendetails-Liste
+        // Stufendetails-Liste (HTML) + Array für print.html
         const n = p.steps;
         const rise = p.rise;
         const run = p.run;
         let listHtml = '';
+        const stufenDetailsArray = [];
         for (let i = 1; i <= n; i++) {
             const hoehe = (i * rise).toFixed(1);
             let auftrittInfo = (i < n) ? `Auftritt ${run.toFixed(1)} cm` : 'Austritt';
             if (p.podestUsed && i === 1) auftrittInfo = `Podest ${podest} cm`;
             listHtml += `<div class="step-row"><span>Stufe ${i}</span><span>${hoehe} cm</span><span style="color:var(--text-secondary);">${auftrittInfo}</span></div>`;
+            stufenDetailsArray.push({
+                stufe: i,
+                hoehe: hoehe,
+                auftritt: auftrittInfo
+            });
         }
         stepListContainer.innerHTML = listHtml;
         stepDetailHint.textContent = `Auftritt ${run.toFixed(1)} cm`;
         
-        // Titel für Visualisierung
+        // Titel Visualisierung
         let title = 'Ansicht · ';
         if (type === 'gerade') title += 'gerade Treppe';
         else if (type === 'viertel') title += 'viertelgewendelt (Draufsicht)';
@@ -258,21 +260,17 @@ function renderAll() {
         else title += 'Dachbodentreppe (steil)';
         visuTitle.textContent = title;
         
-        // === Canvas zeichnen (HIGH-DPI UPDATE) ===
-        // Wir übergeben das Canvas-Element und die Zielgröße in CSS-Pixeln.
-        // Die Funktion drawCanvas berechnet intern devicePixelRatio.
-        // Da das Canvas per CSS auf max-width: 500px gesetzt ist, nutzen wir das oder eine feste Referenz.
-        const cssWidth = 500; 
+        // Canvas zeichnen
+        const cssWidth = 500;
         const cssHeight = 280;
         drawCanvas(p, type, podest, canvas, cssWidth, cssHeight);
         
-        // === Materialliste generieren ===
+        // Materialliste generieren
         const material = MATERIAL_DB[materialKey] || MATERIAL_DB.eiche;
         const bom = generateBOM(p, type, podest, breite, materialKey, befestigung, dicke);
         const positionen = bom.positionen;
         const bomDetails = bom.bomDetails;
         
-        // UI: Materialliste (Übersicht) rendern
         let tableHtml = `<table class="material-table">
             <thead><tr><th>Position</th><th>Menge</th><th>Material</th><th>Maße (L×B×D)</th><th>Hinweis</th></tr></thead><tbody>`;
         positionen.forEach(item => {
@@ -287,8 +285,9 @@ function renderAll() {
         tableHtml += `</tbody></table>`;
         materialListeContainer.innerHTML = tableHtml;
         
-        // === Daten für PDF Export und Druckansicht speichern ===
+        // ========== ERWEITERTER DATENBLOCK FÜR PDF & PRINT.HTML ==========
         currentCalculationData = {
+            // Basis-Geometrie
             height: height,
             laufLength: berechneteLauflaenge,
             rise: p.rise.toFixed(1),
@@ -298,10 +297,26 @@ function renderAll() {
             breite: breite,
             materialName: material.name,
             positionen: positionen,
-            bomDetails: bomDetails
+            bomDetails: bomDetails,
+            // Neue Felder für print.html
+            stairType: type,
+            befestigung: befestigung,
+            podestTiefe: (type === 'podest') ? podest : null,
+            stufenDicke: dicke,
+            nutzlast: nutzlast,
+            gebaeudeTyp: gebaeude,
+            schrittmass: p.schrittmass.toFixed(1),
+            isValid: gesamtValid,
+            warnings: advice,
+            wangenLaenge: wangenLaenge.toFixed(1),
+            materialKey: materialKey,
+            userName: userNameInput ? userNameInput.value.trim() : '',
+            stairName: stairNameInput ? stairNameInput.value.trim() : '',
+            stufenDetails: stufenDetailsArray,
+            isAttic: p.isAttic || false
         };
         
-        // Auch im LocalStorage halten (für Druckansicht Fenster)
+        // In localStorage speichern (für Druckansicht)
         localStorage.setItem('treppeData', JSON.stringify(currentCalculationData));
         
     } catch (error) {
@@ -311,7 +326,7 @@ function renderAll() {
     }
 }
 
-// === Manuelle Modus-Steuerung ===
+// ========== 6. Manuelle Modus-Steuerung ==========
 function activateManualMode() {
     manuellerModus = true;
     renderAll();
@@ -322,7 +337,7 @@ function resetToAuto() {
     renderAll();
 }
 
-// === Synchronisation der Slider ===
+// ========== 7. Event-Listener und Synchronisation ==========
 syncSliderInput(heightSlider, heightInput, heightDisplay, 'cm', renderAll);
 syncSliderInput(distanceSlider, distanceInput, distanceDisplay, 'cm', renderAll);
 syncSliderInput(podestSlider, podestInput, podestDisplay, 'cm', renderAll);
@@ -338,7 +353,6 @@ syncSliderInput(steigungSlider, steigungInput, steigungDisplay, 'cm', () => {
 });
 syncSliderInput(dickeSlider, dickeInput, dickeDisplay, 'mm', renderAll);
 
-// === Event Listener für Dropdowns und Buttons ===
 typeSelect.addEventListener('change', renderAll);
 gebaeudeSelect.addEventListener('change', renderAll);
 materialSelect.addEventListener('change', renderAll);
@@ -355,24 +369,20 @@ applyBtn.onclick = () => {
     renderAll();
 };
 
-// Druckansicht öffnen
 if (printViewBtn) {
     printViewBtn.addEventListener('click', () => {
         window.open('print.html', '_blank');
     });
 }
 
-// === PDF Export Funktion ===
 if (pdfExportBtn) {
     pdfExportBtn.addEventListener('click', () => {
         if (!currentCalculationData) {
             alert("Bitte warten Sie, bis die Berechnung abgeschlossen ist.");
             return;
         }
-        
         const userName = userNameInput ? userNameInput.value.trim() : '';
         const stairName = stairNameInput ? stairNameInput.value.trim() : '';
-        
         try {
             generatePDF(currentCalculationData, userName, stairName);
         } catch (e) {
@@ -382,8 +392,7 @@ if (pdfExportBtn) {
     });
 }
 
-// === Initialer Render ===
-// Kurze Verzögerung sicherzustellen, dass DOM vollständig da ist
+// ========== 8. Initialer Render ==========
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', renderAll);
 } else {
